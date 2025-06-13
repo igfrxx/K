@@ -1218,7 +1218,7 @@ local Toggle = Tab:CreateToggle({
 
 local ModeDropdown = Tab:CreateDropdown({
     Name = "BangType",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "GetSucked", "Missionary"},
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
     CurrentOption = {"Normal"},
     MultipleOptions = false,
     Flag = "Dropdown2",
