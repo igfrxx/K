@@ -889,10 +889,13 @@ local Divider = Tab:CreateDivider()
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 -- Constants
-local VOID_THRESHOLD = -100 -- Y-position considered "void"
-local CHECK_INTERVAL = 0.2 -- Void check frequency (seconds)
+local VOID_THRESHOLD = -100
+local CHECK_INTERVAL = 0.2
+local CLICK_TARGET_HIGHLIGHT_DURATION = 1
 
 -- Variables
 local selectedPlayer = nil
@@ -900,7 +903,7 @@ local tping = false
 local connection = nil
 local anim1Toggle = false
 local anim1Time = 0
-local currentMode = "Bang"
+local currentMode = "Normal"
 local originalGravity = Workspace.Gravity
 local invertHighOffset = -1
 local invertHighDirection = 1
@@ -908,6 +911,9 @@ local invertHighSpeed = 3.7
 local originalCFrame = nil
 local antiVoidEnabled = false
 local lastVoidCheck = 0
+local clickTargetEnabled = false
+local clickConnection = nil
+local lastHighlight = nil
 
 -- Animation setup
 local anim1 = Instance.new("Animation")
@@ -947,21 +953,19 @@ local invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
 local invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
 local invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
 
--- Cleanup function with void protection
+-- Cleanup function
 local function cleanup(forceReturn)
     if connection then
         connection:Disconnect()
         connection = nil
     end
     
-    -- Restore physics
     Workspace.Gravity = originalGravity
     
     if humanoidRootPart and humanoidRootPart:FindFirstChild("BodyVelocity") then
         humanoidRootPart.BodyVelocity:Destroy()
     end
     
-    -- Stop all animations
     anim1Track:Stop()
     anim2Track:Stop()
     invertUnderTrack:Stop()
@@ -969,19 +973,17 @@ local function cleanup(forceReturn)
     invertUpsideDownTrack:Stop()
     invertTorsoTrack:Stop()
     
-    -- Reset animation states
     anim1Toggle = false
     anim1Time = 0
     invertHighOffset = -1
     invertHighDirection = 1
     
-    -- Return to original position if forced or turning off
     if (forceReturn or not tping) and humanoidRootPart and originalCFrame then
         humanoidRootPart.CFrame = originalCFrame
     end
 end
 
--- Void detection
+-- Check if player is near void
 local function checkVoid()
     if not antiVoidEnabled or not humanoidRootPart then return false end
     return humanoidRootPart.Position.Y < VOID_THRESHOLD
@@ -1004,7 +1006,6 @@ player.CharacterAdded:Connect(function(newChar)
     humanoid = newChar:WaitForChild("Humanoid")
     humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
     
-    -- Reload animations
     anim1Track = humanoid:LoadAnimation(anim1)
     anim2Track = humanoid:LoadAnimation(anim2)
     invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
@@ -1012,19 +1013,107 @@ player.CharacterAdded:Connect(function(newChar)
     invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
     invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
     
-    -- Update position reference
     if humanoidRootPart then
         originalCFrame = humanoidRootPart.CFrame
     end
     
-    -- Restart if was active
     if tping then
         cleanup()
         connection = RunService.Heartbeat:Connect(tpLoop)
     end
 end)
 
--- Main TP loop with void protection
+-- Function to select player by character
+local function selectPlayerByCharacter(targetCharacter)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character and player.Character == targetCharacter then
+            selectedPlayer = player
+            if Dropdown then
+                Dropdown:Set({player.Name})
+            end
+            return true
+        end
+    end
+    return false
+end
+
+-- Create highlight effect
+local function createHighlight(targetCharacter)
+    if lastHighlight then
+        lastHighlight:Destroy()
+    end
+    
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = Color3.fromRGB(0, 255, 0)
+    highlight.FillTransparency = 0.7
+    highlight.OutlineColor = Color3.fromRGB(0, 200, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = targetCharacter
+    
+    -- Fade out effect
+    local tweenInfo = TweenInfo.new(
+        CLICK_TARGET_HIGHLIGHT_DURATION,
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.Out
+    )
+    
+    local tween = TweenService:Create(highlight, tweenInfo, {
+        FillTransparency = 1,
+        OutlineTransparency = 1
+    })
+    
+    tween:Play()
+    tween.Completed:Connect(function()
+        highlight:Destroy()
+    end)
+    
+    lastHighlight = highlight
+    return highlight
+end
+
+-- Handle click/tap input
+local function handleClick(inputObject, gameProcessed)
+    if not clickTargetEnabled or gameProcessed then return end
+    
+    local isMouseClick = inputObject.UserInputType == Enum.UserInputType.MouseButton1
+    local isTouch = inputObject.UserInputType == Enum.UserInputType.Touch
+    
+    if isMouseClick or isTouch then
+        local inputPosition = inputObject.Position
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterDescendantsInstances = {player.Character}
+        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+        
+        local camera = Workspace.CurrentCamera
+        local rayOrigin = camera.CFrame.Position
+        local rayDirection = camera:ScreenPointToRay(inputPosition.X, inputPosition.Y).Direction * 1000
+        local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+        
+        if raycastResult then
+            local hitPart = raycastResult.Instance
+            local model = hitPart:FindFirstAncestorOfClass("Model")
+            if model and model:FindFirstChild("Humanoid") then
+                local success = selectPlayerByCharacter(model)
+                if success then
+                    createHighlight(model)
+                end
+            end
+        end
+    end
+end
+
+-- Toggle click target selection
+local function toggleClickTarget(enabled)
+    clickTargetEnabled = enabled
+    if enabled then
+        clickConnection = UserInputService.InputBegan:Connect(handleClick)
+    elseif clickConnection then
+        clickConnection:Disconnect()
+        clickConnection = nil
+    end
+end
+
+-- TP Loop function
 local function tpLoop(dt)
     if not selectedPlayer or not selectedPlayer.Character then return end
     if not player.Character then return end
@@ -1045,8 +1134,9 @@ local function tpLoop(dt)
     
     if not targetRoot or not localRoot then return end
     
-    -- Physics stabilization
+    -- Physics setup
     Workspace.Gravity = 0
+    
     if localRoot:FindFirstChild("BodyVelocity") then
         localRoot.BodyVelocity.Velocity = Vector3.new()
     else
@@ -1057,7 +1147,7 @@ local function tpLoop(dt)
         bodyVelocity.Parent = localRoot
     end
     
-    -- Mode implementations
+    -- Mode handling
     if currentMode == "Bang" then
         local offset = -targetRoot.CFrame.LookVector * 1
         local newPosition = targetRoot.Position + offset
@@ -1127,7 +1217,6 @@ local function tpLoop(dt)
         invertTorsoTrack:Stop()
         
     elseif currentMode == "GetSucked" then
-        -- 3x faster oscillation
         invertHighOffset = invertHighOffset + (invertHighDirection * invertHighSpeed * dt)
         
         if invertHighOffset <= -1.6 then
@@ -1189,8 +1278,17 @@ local function tpLoop(dt)
 end
 
 -- UI Elements
+local ClickTargetToggle = Tab:CreateToggle({
+    Name = "ClickTarget Selection",
+    CurrentValue = false,
+    Flag = "Toggle3",
+    Callback = function(Value)
+        toggleClickTarget(Value)
+    end,
+})
+
 local AntiVoidToggle = Tab:CreateToggle({
-    Name = "AntiBang Prevention",
+    Name = "AntiBàng/Void Protection",
     CurrentValue = false,
     Flag = "Toggle2",
     Callback = function(Value)
@@ -1199,7 +1297,7 @@ local AntiVoidToggle = Tab:CreateToggle({
 })
 
 local Toggle = Tab:CreateToggle({
-    Name = "StartGettingFreaky",
+    Name = "Start GettingFreaky",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -1265,16 +1363,31 @@ local Input = Tab:CreateInput({
     end,
 })
 
--- Cleanup on death
-humanoid.Died:Connect(cleanup)
+-- Cleanup when character dies
+humanoid.Died:Connect(function()
+    toggleClickTarget(false)
+    cleanup()
+end)
 
--- Update player list
+-- Cleanup when player leaves
+game:GetService("Players").PlayerRemoving:Connect(function(leavingPlayer)
+    if leavingPlayer == player then
+        toggleClickTarget(false)
+        cleanup()
+    end
+end)
+
+-- Update dropdown when players join/leave
 Players.PlayerAdded:Connect(function()
-    Dropdown:Refresh(getPlayerNames(), {})
+    if Dropdown then
+        Dropdown:Refresh(getPlayerNames(), {})
+    end
 end)
 
 Players.PlayerRemoving:Connect(function()
-    Dropdown:Refresh(getPlayerNames(), {})
+    if Dropdown then
+        Dropdown:Refresh(getPlayerNames(), {})
+    end
 end)
 
 local Divider = Tab:CreateDivider()
