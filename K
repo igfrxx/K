@@ -903,7 +903,7 @@ local tping = false
 local connection = nil
 local anim1Toggle = false
 local anim1Time = 0
-local currentMode = "Normal"
+local currentMode = "Bang"
 local originalGravity = Workspace.Gravity
 local invertHighOffset = -1
 local invertHighDirection = 1
@@ -1288,7 +1288,7 @@ local ClickTargetToggle = Tab:CreateToggle({
 })
 
 local AntiVoidToggle = Tab:CreateToggle({
-    Name = "AntiBàng/Void Protection",
+    Name = "AntiBang/Void Protection",
     CurrentValue = false,
     Flag = "Toggle2",
     Callback = function(Value)
