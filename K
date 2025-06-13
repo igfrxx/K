@@ -123,6 +123,105 @@ end
 -- Start the intro
 playIntro()
 
+-- StoredFuncs/Variables
+
+
+-- Antifling Variable
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local antiflingConnection
+
+-- VoidProtection Variable
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local voidYLevel = -100 -- Adjust based on your game's void height
+local protectionEnabled = false
+local bounceForce = 10000   -- Initial upward force
+local maxBounceForce = 999e999
+local platformCheckRaycast = 5 -- Raycast distance to check for platforms below
+local inVoid = false -- Track if player is in void
+
+local function checkPlatformBelow()
+    if not humanoidRootPart then return false end
+    
+    local rayOrigin = humanoidRootPart.Position
+    local rayDirection = Vector3.new(0, -platformCheckRaycast, 0)
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {character}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    
+    local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+    return raycastResult and raycastResult.Instance
+end
+
+local function applyBounce()
+    if not humanoidRootPart or not protectionEnabled then return end
+    
+    -- Apply upward velocity (like a bounce)
+    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, bounceForce, 0)
+    
+    -- Increase bounce force for next time (capped at maxBounceForce)
+    bounceForce = math.min(bounceForce + 100, maxBounceForce)
+    
+    print("Bouncing with force:", bounceForce) -- Debug output
+end
+
+local function checkVoidPosition()
+    while protectionEnabled and humanoidRootPart do
+        local isInVoidNow = humanoidRootPart.Position.Y < voidYLevel
+        
+        -- Check for platform below regardless of void state
+        local onPlatform = checkPlatformBelow()
+        
+        if onPlatform then
+            -- Player landed on something, reset bounce force
+            bounceForce = 100
+            inVoid = false
+        elseif isInVoidNow then
+            -- Player is in void, apply bounce
+            if not inVoid then
+                -- First time entering void
+                bounceForce = 100
+                inVoid = true
+            else
+                -- Continuous bouncing in void
+                applyBounce()
+            end
+        else
+            inVoid = false
+        end
+        
+        task.wait(0.1) -- More efficient than wait()
+    end
+end
+
+function VoidProtectionOn()
+    if not protectionEnabled then
+        protectionEnabled = true
+        inVoid = false
+        bounceForce = 100 -- Reset force when turning on
+        checkVoidPosition()
+        print("Void Protection (Bounce Mode): ON")
+    end
+end
+
+function VoidProtectionOff()
+    protectionEnabled = false
+    print("Void Protection: OFF")
+end
+
+-- rj func
+function Rj()
+    local TeleportService = game:GetService("TeleportService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Rejoin the same place and server
+    TeleportService:Teleport(game.PlaceId, LocalPlayer)
+end
+
 function CreateTptool()
 local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
@@ -515,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.1)",
+   LoadingTitle = "HELLOO 🐟 v(0.2)",
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -552,7 +651,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "No Updates | Bugfixes 0"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Textured the UI Added AntiVoid Added AntiBang Prevention Added Tools Section In ClientTab| Bugfixes 17"})
 local Tab = Window:CreateTab("Client", "user")
 
 local animationSpeedEnabled = false
@@ -664,8 +763,6 @@ local ToggleJump = Tab:CreateToggle({
     end,
 })
 
-local Divider = Tab:CreateDivider()
-
 local SliderJump = Tab:CreateSlider({
     Name = "JumpPower Value",
     Range = {50, 200}, -- Minimum is normal jump power
@@ -685,12 +782,26 @@ local SliderJump = Tab:CreateSlider({
 })
 
 local Divider = Tab:CreateDivider()
+local Section = Tab:CreateSection("Tools Ig")
 
+local Button = Tab:CreateButton({
+   Name = "Rejoin",
+   Callback = function()
+   Rj()
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "ServerHopper",
+   Callback = function()
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/igfrxx/S/refs/heads/main/S", true))()
+   end,
+})
 
 local Toggle = Tab:CreateToggle({
    Name = "Godmode",
    CurrentValue = false,
-   Flag = "Togglinvise3",
+   Flag = "Togglinvise5",
    Callback = function(Value)
       if Value then
          GodModeOn()
@@ -700,11 +811,23 @@ local Toggle = Tab:CreateToggle({
    end,
 })
 
+local Toggle = Tab:CreateToggle({
+   Name = "VoidProtection",
+   CurrentValue = false,
+   Flag = "Togglinvisebx3",
+   Callback = function(Value)
+      if Value then
+         VoidProtectionOn()
+      else
+         VoidProtectionOff()
+      end
+   end,
+})
 
 local Toggle = Tab:CreateToggle({
    Name = "Invisible (NEW)",
    CurrentValue = false,
-   Flag = "Togglinvise2",
+   Flag = "Togglinvihsse2",
    Callback = function(Value)
       if Value then
          invis2()
@@ -744,13 +867,6 @@ local Button = Tab:CreateButton({
 })
 
 local Button = Tab:CreateButton({
-   Name = "ServerHopper",
-   Callback = function()
-   loadstring(game:HttpGet("https://raw.githubusercontent.com/igfrxx/S/refs/heads/main/S", true))()
-   end,
-})
-
-local Button = Tab:CreateButton({
    Name = "Swordblox",
    Callback = function()
    loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/SwordBlox/refs/heads/main/SB", true))()
@@ -774,18 +890,24 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+-- Constants
+local VOID_THRESHOLD = -100 -- Y-position considered "void"
+local CHECK_INTERVAL = 0.2 -- Void check frequency (seconds)
+
 -- Variables
 local selectedPlayer = nil
 local tping = false
 local connection = nil
 local anim1Toggle = false
 local anim1Time = 0
-local currentMode = "Normal"
+local currentMode = "Bang"
 local originalGravity = Workspace.Gravity
 local invertHighOffset = -1
 local invertHighDirection = 1
-local invertHighSpeed = 3.7 -- 3x faster oscillation
-local originalCFrame = nil -- Stores original position/orientation
+local invertHighSpeed = 3.7
+local originalCFrame = nil
+local antiVoidEnabled = false
+local lastVoidCheck = 0
 
 -- Animation setup
 local anim1 = Instance.new("Animation")
@@ -825,8 +947,8 @@ local invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
 local invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
 local invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
 
--- Cleanup function (now returns to original position)
-local function cleanup()
+-- Cleanup function with void protection
+local function cleanup(forceReturn)
     if connection then
         connection:Disconnect()
         connection = nil
@@ -853,10 +975,16 @@ local function cleanup()
     invertHighOffset = -1
     invertHighDirection = 1
     
-    -- Return to original position if available
-    if humanoidRootPart and originalCFrame then
+    -- Return to original position if forced or turning off
+    if (forceReturn or not tping) and humanoidRootPart and originalCFrame then
         humanoidRootPart.CFrame = originalCFrame
     end
+end
+
+-- Void detection
+local function checkVoid()
+    if not antiVoidEnabled or not humanoidRootPart then return false end
+    return humanoidRootPart.Position.Y < VOID_THRESHOLD
 end
 
 -- Get player names for dropdown
@@ -876,7 +1004,7 @@ player.CharacterAdded:Connect(function(newChar)
     humanoid = newChar:WaitForChild("Humanoid")
     humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
     
-    -- Reload animations for new character
+    -- Reload animations
     anim1Track = humanoid:LoadAnimation(anim1)
     anim2Track = humanoid:LoadAnimation(anim2)
     invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
@@ -884,22 +1012,32 @@ player.CharacterAdded:Connect(function(newChar)
     invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
     invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
     
-    -- Store new character's position as original
+    -- Update position reference
     if humanoidRootPart then
         originalCFrame = humanoidRootPart.CFrame
     end
     
-    -- Restart TP if it was active
+    -- Restart if was active
     if tping then
         cleanup()
         connection = RunService.Heartbeat:Connect(tpLoop)
     end
 end)
 
--- TP Loop function
+-- Main TP loop with void protection
 local function tpLoop(dt)
     if not selectedPlayer or not selectedPlayer.Character then return end
     if not player.Character then return end
+    
+    -- Void check
+    lastVoidCheck = lastVoidCheck + dt
+    if lastVoidCheck >= CHECK_INTERVAL then
+        lastVoidCheck = 0
+        if checkVoid() then
+            cleanup(true)
+            return
+        end
+    end
     
     local targetChar = selectedPlayer.Character
     local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
@@ -907,9 +1045,8 @@ local function tpLoop(dt)
     
     if not targetRoot or not localRoot then return end
     
-    -- Physics setup
+    -- Physics stabilization
     Workspace.Gravity = 0
-    
     if localRoot:FindFirstChild("BodyVelocity") then
         localRoot.BodyVelocity.Velocity = Vector3.new()
     else
@@ -920,7 +1057,7 @@ local function tpLoop(dt)
         bodyVelocity.Parent = localRoot
     end
     
-    -- Mode handling
+    -- Mode implementations
     if currentMode == "Bang" then
         local offset = -targetRoot.CFrame.LookVector * 1
         local newPosition = targetRoot.Position + offset
@@ -990,7 +1127,7 @@ local function tpLoop(dt)
         invertTorsoTrack:Stop()
         
     elseif currentMode == "GetSucked" then
-        -- Faster oscillation (3x)
+        -- 3x faster oscillation
         invertHighOffset = invertHighOffset + (invertHighDirection * invertHighSpeed * dt)
         
         if invertHighOffset <= -1.6 then
@@ -1052,28 +1189,36 @@ local function tpLoop(dt)
 end
 
 -- UI Elements
+local AntiVoidToggle = Tab:CreateToggle({
+    Name = "AntiBang Prevention",
+    CurrentValue = false,
+    Flag = "Toggle2",
+    Callback = function(Value)
+        antiVoidEnabled = Value
+    end,
+})
+
 local Toggle = Tab:CreateToggle({
-    Name = "GetFreaky",
+    Name = "StartGettingFreaky",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
         tping = Value
         if tping then
-            -- Store current position before starting
             if humanoidRootPart then
                 originalCFrame = humanoidRootPart.CFrame
             end
             cleanup()
             connection = RunService.Heartbeat:Connect(tpLoop)
         else
-            cleanup() -- This will return to original position
+            cleanup()
         end
     end,
 })
 
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "TP Mode",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
+    Name = "BangType",
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "GetSucked", "Missionary"},
     CurrentOption = {"Normal"},
     MultipleOptions = false,
     Flag = "Dropdown2",
@@ -1110,7 +1255,7 @@ local Dropdown = Tab:CreateDropdown({
 
 local IntervalValue = "0.4"
 local Input = Tab:CreateInput({
-    Name = "Interval (Normal/Invert Modes)",
+    Name = "Interval",
     CurrentValue = IntervalValue,
     PlaceholderText = "Enter interval in seconds",
     RemoveTextAfterFocusLost = false,
@@ -1120,10 +1265,10 @@ local Input = Tab:CreateInput({
     end,
 })
 
--- Cleanup when character dies
+-- Cleanup on death
 humanoid.Died:Connect(cleanup)
 
--- Update dropdown when players join/leave
+-- Update player list
 Players.PlayerAdded:Connect(function()
     Dropdown:Refresh(getPlayerNames(), {})
 end)
