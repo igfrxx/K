@@ -1297,7 +1297,7 @@ local AntiVoidToggle = Tab:CreateToggle({
 })
 
 local Toggle = Tab:CreateToggle({
-    Name = "Start GettingFreaky",
+    Name = "Start GettingFreaky [R6]",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -1315,7 +1315,7 @@ local Toggle = Tab:CreateToggle({
 })
 
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "BangType",
+    Name = "BangType [R6]",
     Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
     CurrentOption = {"Normal"},
     MultipleOptions = false,
