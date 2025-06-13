@@ -1277,6 +1277,24 @@ local function tpLoop(dt)
     end
 end
 
+local Toggle = Tab:CreateToggle({
+    Name = "Start GettingFreaky [R6]",
+    CurrentValue = false,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        tping = Value
+        if tping then
+            if humanoidRootPart then
+                originalCFrame = humanoidRootPart.CFrame
+            end
+            cleanup()
+            connection = RunService.Heartbeat:Connect(tpLoop)
+        else
+            cleanup()
+        end
+    end,
+})
+
 -- UI Elements
 local ClickTargetToggle = Tab:CreateToggle({
     Name = "ClickTarget Selection",
@@ -1296,28 +1314,10 @@ local AntiVoidToggle = Tab:CreateToggle({
     end,
 })
 
-local Toggle = Tab:CreateToggle({
-    Name = "Start GettingFreaky [R6]",
-    CurrentValue = false,
-    Flag = "Toggle1",
-    Callback = function(Value)
-        tping = Value
-        if tping then
-            if humanoidRootPart then
-                originalCFrame = humanoidRootPart.CFrame
-            end
-            cleanup()
-            connection = RunService.Heartbeat:Connect(tpLoop)
-        else
-            cleanup()
-        end
-    end,
-})
-
 local ModeDropdown = Tab:CreateDropdown({
     Name = "BangType [R6]",
     Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
-    CurrentOption = {"Normal"},
+    CurrentOption = {"Bang"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
