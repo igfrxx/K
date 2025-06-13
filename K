@@ -780,11 +780,12 @@ local tping = false
 local connection = nil
 local anim1Toggle = false
 local anim1Time = 0
-local currentMode = "Bang"
+local currentMode = "Normal"
 local originalGravity = Workspace.Gravity
 local invertHighOffset = -1
 local invertHighDirection = 1
 local invertHighSpeed = 3.7 -- 3x faster oscillation
+local originalCFrame = nil -- Stores original position/orientation
 
 -- Animation setup
 local anim1 = Instance.new("Animation")
@@ -802,7 +803,7 @@ invertHighAnim.AnimationId = "rbxassetid://79155149"
 local invertUpsideDownAnim = Instance.new("Animation")
 invertUpsideDownAnim.AnimationId = "rbxassetid://95390146"
 
-local invertTorsoAnim = Instance.new("Animation") -- New animation for Invert Torso
+local invertTorsoAnim = Instance.new("Animation")
 invertTorsoAnim.AnimationId = "rbxassetid://48957148"
 
 -- Initialize character
@@ -811,40 +812,54 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
+-- Store initial position
+if humanoidRootPart then
+    originalCFrame = humanoidRootPart.CFrame
+end
+
 -- Load animations
 local anim1Track = humanoid:LoadAnimation(anim1)
 local anim2Track = humanoid:LoadAnimation(anim2)
 local invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
 local invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
 local invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
-local invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim) -- New track
+local invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
 
--- Cleanup function
+-- Cleanup function (now returns to original position)
 local function cleanup()
     if connection then
         connection:Disconnect()
         connection = nil
     end
     
+    -- Restore physics
     Workspace.Gravity = originalGravity
     
     if humanoidRootPart and humanoidRootPart:FindFirstChild("BodyVelocity") then
         humanoidRootPart.BodyVelocity:Destroy()
     end
     
+    -- Stop all animations
     anim1Track:Stop()
     anim2Track:Stop()
     invertUnderTrack:Stop()
     invertHighTrack:Stop()
     invertUpsideDownTrack:Stop()
-    invertTorsoTrack:Stop() -- Stop torso animation
+    invertTorsoTrack:Stop()
+    
+    -- Reset animation states
     anim1Toggle = false
     anim1Time = 0
     invertHighOffset = -1
     invertHighDirection = 1
+    
+    -- Return to original position if available
+    if humanoidRootPart and originalCFrame then
+        humanoidRootPart.CFrame = originalCFrame
+    end
 end
 
--- Get player names
+-- Get player names for dropdown
 local function getPlayerNames()
     local names = {}
     for _, v in ipairs(Players:GetPlayers()) do
@@ -854,6 +869,32 @@ local function getPlayerNames()
     end
     return names
 end
+
+-- Handle character respawns
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = newChar:WaitForChild("Humanoid")
+    humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
+    
+    -- Reload animations for new character
+    anim1Track = humanoid:LoadAnimation(anim1)
+    anim2Track = humanoid:LoadAnimation(anim2)
+    invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
+    invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
+    invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
+    invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
+    
+    -- Store new character's position as original
+    if humanoidRootPart then
+        originalCFrame = humanoidRootPart.CFrame
+    end
+    
+    -- Restart TP if it was active
+    if tping then
+        cleanup()
+        connection = RunService.Heartbeat:Connect(tpLoop)
+    end
+end)
 
 -- TP Loop function
 local function tpLoop(dt)
@@ -868,6 +909,7 @@ local function tpLoop(dt)
     
     -- Physics setup
     Workspace.Gravity = 0
+    
     if localRoot:FindFirstChild("BodyVelocity") then
         localRoot.BodyVelocity.Velocity = Vector3.new()
     else
@@ -947,7 +989,7 @@ local function tpLoop(dt)
         invertUpsideDownTrack:Stop()
         invertTorsoTrack:Stop()
         
-    elseif currentMode == "GetSuck" then
+    elseif currentMode == "GetSucked" then
         -- Faster oscillation (3x)
         invertHighOffset = invertHighOffset + (invertHighDirection * invertHighSpeed * dt)
         
@@ -992,18 +1034,15 @@ local function tpLoop(dt)
         invertTorsoTrack:Stop()
         
     elseif currentMode == "Missionary" then
-        -- New Invert Torso mode
         local positionOffset = Vector3.new(0, 0, -1)
         local rotationOffset = CFrame.Angles(0, math.pi, 0)
         localRoot.CFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
         
-        -- Play torso animation continuously without toggling
         if not invertTorsoTrack.IsPlaying then
             invertTorsoTrack:Play()
             invertTorsoTrack.Looped = true
         end
         
-        -- Stop all other animations
         anim1Track:Stop()
         anim2Track:Stop()
         invertUnderTrack:Stop()
@@ -1014,23 +1053,27 @@ end
 
 -- UI Elements
 local Toggle = Tab:CreateToggle({
-    Name = "StartFreaky",
+    Name = "GetFreaky",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
         tping = Value
         if tping then
+            -- Store current position before starting
+            if humanoidRootPart then
+                originalCFrame = humanoidRootPart.CFrame
+            end
             cleanup()
             connection = RunService.Heartbeat:Connect(tpLoop)
         else
-            cleanup()
+            cleanup() -- This will return to original position
         end
     end,
 })
 
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "BangType",
-    Options = {"Bang", "InvertBang", "Suck", "GetSuck", "69", "Missionary"},
+    Name = "TP Mode",
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
     CurrentOption = {"Normal"},
     MultipleOptions = false,
     Flag = "Dropdown2",
@@ -1067,7 +1110,7 @@ local Dropdown = Tab:CreateDropdown({
 
 local IntervalValue = "0.4"
 local Input = Tab:CreateInput({
-    Name = "Interval",
+    Name = "Interval (Normal/Invert Modes)",
     CurrentValue = IntervalValue,
     PlaceholderText = "Enter interval in seconds",
     RemoveTextAfterFocusLost = false,
@@ -1077,16 +1120,10 @@ local Input = Tab:CreateInput({
     end,
 })
 
--- Character event handlers
-character:GetPropertyChangedSignal("Parent"):Connect(function()
-    if not character.Parent then
-        cleanup()
-    end
-end)
-
+-- Cleanup when character dies
 humanoid.Died:Connect(cleanup)
 
--- Player list updates
+-- Update dropdown when players join/leave
 Players.PlayerAdded:Connect(function()
     Dropdown:Refresh(getPlayerNames(), {})
 end)
