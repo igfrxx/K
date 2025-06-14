@@ -1423,7 +1423,7 @@ local AntiVoidToggle = Tab:CreateToggle({
 
 local ModeDropdown = Tab:CreateDropdown({
     Name = "FreakType [R6]",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "Missionary", "68", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "Missionary", "69", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
     CurrentOption = {"Bang"},
     MultipleOptions = false,
     Flag = "Dropdown2",
