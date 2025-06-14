@@ -880,6 +880,21 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
+    ["InvertBang2"] = {
+        animId = "rbxassetid://173820337",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 1.1, -1.9},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://182749109",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 1,
+        oscillate = true,
+        oscillateRange = {-1.6, -1},
+        oscillateSpeed = 5.7
+    },
     ["Suck"] = {
         animId = "rbxassetid://95390146",
         looped = true,
@@ -905,7 +920,7 @@ local animationTemplates = {
         hrpRotation = {math.pi, 0, math.pi},
         offset = {0, 0, -1},
         secondaryAnim = false,
-        animSpeed = 1
+        animSpeed = 0.5
     },
     ["Cuddle"] = {
         animId = "rbxassetid://180436334",
@@ -913,15 +928,15 @@ local animationTemplates = {
         hrpRotation = {math.pi, 0, math.pi},
         offset = {0, 0, -1},
         secondaryAnim = false,
-        animSpeed = 1
+        animSpeed = 0.5
     },
     ["AszOnFace"] = {
-        animId = "rbxassetid://48957148",
+        animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {0, 0, 0},
         offset = {0, -3, 1},
         secondaryAnim = false,
-        animSpeed = 1
+        animSpeed = 0.1
     },
     ["GrabHips"] = {
         animId = "rbxassetid://56153856",
@@ -1368,7 +1383,7 @@ local AntiVoidToggle = Tab:CreateToggle({
 
 local ModeDropdown = Tab:CreateDropdown({
     Name = "FreakType [R6]",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "Missionary", "69", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
+    Options = {"Bang", "InvertBang", "InvertBang2", "Suck", "GetSucked", "Missionary", "69", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
     CurrentOption = {"None"},
     MultipleOptions = false,
     Flag = "Dropdown2",
