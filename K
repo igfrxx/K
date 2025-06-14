@@ -885,6 +885,17 @@ local Label = Tab:CreateLabel("KillerFish Gets Fishy🐟", "info")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
 local Divider = Tab:CreateDivider()
 
+-- animationChecks
+-- Bang
+-- InvertBang
+-- Suck
+-- GetSucked
+-- Kiss
+-- Cuddle
+-- HeadSit
+-- 69
+-- Missionary
+
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -894,7 +905,7 @@ local TweenService = game:GetService("TweenService")
 
 -- Constants
 local VOID_THRESHOLD = -100
-local CHECK_INTERVAL = 0.2
+local CHECK_INTERVAL = 0.01
 local CLICK_TARGET_HIGHLIGHT_DURATION = 1
 
 -- Animation Templates
