@@ -614,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.2)",
+   LoadingTitle = "HELLOO 🐟 v(0.3)",
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,7 +651,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Textured the UI Added AntiVoid Added AntiBang Prevention Added Tools Section In ClientTab| Bugfixes 17"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added 2 more options in the bang type drop-down| Bugfixes 17"})
 local Tab = Window:CreateTab("Client", "user")
 
 local animationSpeedEnabled = false
@@ -897,42 +897,105 @@ local VOID_THRESHOLD = -100
 local CHECK_INTERVAL = 0.2
 local CLICK_TARGET_HIGHLIGHT_DURATION = 1
 
+-- Animation Templates
+local animationTemplates = {
+    ["Bang"] = {
+        animId = "rbxassetid://216937924",
+        looped = false,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, 1},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://31319431",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 1
+    },
+    ["InvertBang"] = {
+        animId = "rbxassetid://216937924",
+        looped = false,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, -1},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://31319431",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 1
+    },
+    ["Suck"] = {
+        animId = "rbxassetid://95390146",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, -2.5, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["GetSucked"] = {
+        animId = "rbxassetid://79155149",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 2.4, -1},
+        secondaryAnim = false,
+        animSpeed = 5,
+        oscillate = true,
+        oscillateRange = {-1.6, -1},
+        oscillateSpeed = 1.5
+    },
+    ["Kiss"] = {
+        animId = "rbxassetid://95390146",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 0, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["HeadSit"] = {
+        animId = "rbxassetid://48957148",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 2, 1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["69"] = {
+        animId = "rbxassetid://95390146",
+        looped = true,
+        hrpRotation = {math.pi, 0, 0},
+        offset = {0, 0, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["Missionary"] = {
+        animId = "rbxassetid://48957148",
+        looped = true,
+        hrpRotation = {0, math.pi, 0},
+        offset = {0, 0, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    }
+}
+
 -- Variables
 local selectedPlayer = nil
 local tping = false
 local connection = nil
-local anim1Toggle = false
-local anim1Time = 0
-local currentMode = "Bang"
+local animToggle = false
+local animTime = 0
+local currentMode = "Normal"
 local originalGravity = Workspace.Gravity
-local invertHighOffset = -1
-local invertHighDirection = 1
-local invertHighSpeed = 3.7
 local originalCFrame = nil
 local antiVoidEnabled = false
 local lastVoidCheck = 0
 local clickTargetEnabled = false
 local clickConnection = nil
 local lastHighlight = nil
+local oscillateOffset = 0
+local oscillateDirection = 1
 
--- Animation setup
-local anim1 = Instance.new("Animation")
-anim1.AnimationId = "rbxassetid://216937924"
-
-local anim2 = Instance.new("Animation")
-anim2.AnimationId = "rbxassetid://31319431"
-
-local invertUnderAnim = Instance.new("Animation")
-invertUnderAnim.AnimationId = "rbxassetid://95390146"
-
-local invertHighAnim = Instance.new("Animation")
-invertHighAnim.AnimationId = "rbxassetid://79155149"
-
-local invertUpsideDownAnim = Instance.new("Animation")
-invertUpsideDownAnim.AnimationId = "rbxassetid://95390146"
-
-local invertTorsoAnim = Instance.new("Animation")
-invertTorsoAnim.AnimationId = "rbxassetid://48957148"
+-- Animation tracks storage
+local animationTracks = {}
+local secondaryAnimationTracks = {}
 
 -- Initialize character
 local player = Players.LocalPlayer
@@ -945,13 +1008,32 @@ if humanoidRootPart then
     originalCFrame = humanoidRootPart.CFrame
 end
 
--- Load animations
-local anim1Track = humanoid:LoadAnimation(anim1)
-local anim2Track = humanoid:LoadAnimation(anim2)
-local invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
-local invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
-local invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
-local invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
+-- Load animation function with speed adjustment
+local function loadAnimation(animId, speed)
+    if not animId then return nil end
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animId
+    local track = humanoid:LoadAnimation(anim)
+    if speed then
+        track:AdjustSpeed(speed)
+    end
+    return track
+end
+
+-- Initialize all animations with proper speeds
+local function initializeAnimations()
+    for mode, data in pairs(animationTemplates) do
+        if data.animId then
+            animationTracks[mode] = loadAnimation(data.animId, data.animSpeed)
+            if animationTracks[mode] and data.looped then
+                animationTracks[mode].Looped = true
+            end
+        end
+        if data.secondaryAnim and data.secondaryAnimId then
+            secondaryAnimationTracks[mode] = loadAnimation(data.secondaryAnimId, data.secondaryAnimSpeed)
+        end
+    end
+end
 
 -- Cleanup function
 local function cleanup(forceReturn)
@@ -966,17 +1048,18 @@ local function cleanup(forceReturn)
         humanoidRootPart.BodyVelocity:Destroy()
     end
     
-    anim1Track:Stop()
-    anim2Track:Stop()
-    invertUnderTrack:Stop()
-    invertHighTrack:Stop()
-    invertUpsideDownTrack:Stop()
-    invertTorsoTrack:Stop()
+    -- Stop all animations
+    for _, track in pairs(animationTracks) do
+        if track then track:Stop() end
+    end
+    for _, track in pairs(secondaryAnimationTracks) do
+        if track then track:Stop() end
+    end
     
-    anim1Toggle = false
-    anim1Time = 0
-    invertHighOffset = -1
-    invertHighDirection = 1
+    animToggle = false
+    animTime = 0
+    oscillateOffset = 0
+    oscillateDirection = 1
     
     if (forceReturn or not tping) and humanoidRootPart and originalCFrame then
         humanoidRootPart.CFrame = originalCFrame
@@ -1006,12 +1089,10 @@ player.CharacterAdded:Connect(function(newChar)
     humanoid = newChar:WaitForChild("Humanoid")
     humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
     
-    anim1Track = humanoid:LoadAnimation(anim1)
-    anim2Track = humanoid:LoadAnimation(anim2)
-    invertUnderTrack = humanoid:LoadAnimation(invertUnderAnim)
-    invertHighTrack = humanoid:LoadAnimation(invertHighAnim)
-    invertUpsideDownTrack = humanoid:LoadAnimation(invertUpsideDownAnim)
-    invertTorsoTrack = humanoid:LoadAnimation(invertTorsoAnim)
+    -- Reinitialize animations for new character
+    animationTracks = {}
+    secondaryAnimationTracks = {}
+    initializeAnimations()
     
     if humanoidRootPart then
         originalCFrame = humanoidRootPart.CFrame
@@ -1113,7 +1194,7 @@ local function toggleClickTarget(enabled)
     end
 end
 
--- TP Loop function
+-- TP Loop function with proper animation speed control
 local function tpLoop(dt)
     if not selectedPlayer or not selectedPlayer.Character then return end
     if not player.Character then return end
@@ -1137,148 +1218,111 @@ local function tpLoop(dt)
     -- Physics setup
     Workspace.Gravity = 0
     
-    if localRoot:FindFirstChild("BodyVelocity") then
-        localRoot.BodyVelocity.Velocity = Vector3.new()
-    else
+    if not localRoot:FindFirstChild("BodyVelocity") then
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Velocity = Vector3.new()
         bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
         bodyVelocity.P = math.huge
         bodyVelocity.Parent = localRoot
+    else
+        localRoot.BodyVelocity.Velocity = Vector3.new()
     end
     
-    -- Mode handling
-    if currentMode == "Bang" then
-        local offset = -targetRoot.CFrame.LookVector * 1
-        local newPosition = targetRoot.Position + offset
-        localRoot.CFrame = CFrame.new(newPosition, targetRoot.Position)
+    -- Get current mode data
+    local modeData = animationTemplates[currentMode]
+    if not modeData then return end
+    
+    -- Handle oscillation if enabled
+    local zOffset = modeData.offset[3]
+    if modeData.oscillate then
+        oscillateOffset = oscillateOffset + (oscillateDirection * modeData.oscillateSpeed * dt)
+        if oscillateOffset <= modeData.oscillateRange[1] then
+            oscillateDirection = 1
+            oscillateOffset = modeData.oscillateRange[1]
+        elseif oscillateOffset >= modeData.oscillateRange[2] then
+            oscillateDirection = -1
+            oscillateOffset = modeData.oscillateRange[2]
+        end
+        zOffset = oscillateOffset
+    end
+    
+    -- Calculate position and rotation
+    local positionOffset = Vector3.new(
+        modeData.offset[1],
+        modeData.offset[2],
+        zOffset
+    )
+    
+    local rotationOffset = CFrame.Angles(
+        modeData.hrpRotation[1],
+        modeData.hrpRotation[2],
+        modeData.hrpRotation[3]
+    )
+    
+    -- Calculate final CFrame
+    local finalCFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
+    if modeData.lookAtTarget then
+        finalCFrame = CFrame.new(finalCFrame.Position, targetRoot.Position)
+    end
+    
+    localRoot.CFrame = finalCFrame
+    
+    -- Handle animations with proper speed control
+    local primaryTrack = animationTracks[currentMode]
+    local secondaryTrack = secondaryAnimationTracks[currentMode]
+    
+    -- Primary animation handling
+    if primaryTrack then
+        -- Ensure speed is applied every frame
+        if modeData.animSpeed then
+            primaryTrack:AdjustSpeed(modeData.animSpeed)
+        end
         
-        local interval = tonumber(IntervalValue) or 0.5
-        anim1Time = anim1Time + dt
-        if anim1Time >= interval then
-            anim1Time = 0
-            anim1Toggle = not anim1Toggle
-            if anim1Toggle then
-                anim1Track:Play()
-            else
-                anim1Track:Stop()
+        if not modeData.looped then
+            -- Toggle animation based on interval
+            animTime = animTime + dt
+            if animTime >= modeData.interval then
+                animTime = 0
+                animToggle = not animToggle
+                if animToggle then
+                    if not primaryTrack.IsPlaying then
+                        primaryTrack:Play()
+                    end
+                else
+                    primaryTrack:Stop()
+                end
             end
+        elseif not primaryTrack.IsPlaying then
+            primaryTrack:Play()
         end
-        
-        if not anim2Track.IsPlaying then
-            anim2Track:Play()
+    end
+    
+    -- Secondary animation handling
+    if secondaryTrack then
+        -- Apply speed to secondary animation
+        if modeData.secondaryAnimSpeed then
+            secondaryTrack:AdjustSpeed(modeData.secondaryAnimSpeed)
         end
-        
-        invertUnderTrack:Stop()
-        invertHighTrack:Stop()
-        invertUpsideDownTrack:Stop()
-        invertTorsoTrack:Stop()
-        
-    elseif currentMode == "InvertBang" then
-        local offset = targetRoot.CFrame.LookVector * 1
-        local newPosition = targetRoot.Position + offset
-        localRoot.CFrame = CFrame.new(newPosition, newPosition + targetRoot.CFrame.LookVector)
-        
-        local interval = tonumber(IntervalValue) or 0.5
-        anim1Time = anim1Time + dt
-        if anim1Time >= interval then
-            anim1Time = 0
-            anim1Toggle = not anim1Toggle
-            if anim1Toggle then
-                anim1Track:Play()
-            else
-                anim1Track:Stop()
-            end
+        if not secondaryTrack.IsPlaying then
+            secondaryTrack:Play()
         end
-        
-        if not anim2Track.IsPlaying then
-            anim2Track:Play()
+    end
+    
+    -- Stop other animations
+    for mode, track in pairs(animationTracks) do
+        if mode ~= currentMode and track and track.IsPlaying then
+            track:Stop()
         end
-        
-        invertUnderTrack:Stop()
-        invertHighTrack:Stop()
-        invertUpsideDownTrack:Stop()
-        invertTorsoTrack:Stop()
-        
-    elseif currentMode == "Suck" then
-        local positionOffset = Vector3.new(0, -2.5, -1)
-        local rotationOffset = CFrame.Angles(math.pi, 0, math.pi)
-        localRoot.CFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
-        
-        if not invertUnderTrack.IsPlaying then
-            invertUnderTrack:Play()
-            invertUnderTrack.Looped = true
+    end
+    for mode, track in pairs(secondaryAnimationTracks) do
+        if mode ~= currentMode and track and track.IsPlaying then
+            track:Stop()
         end
-        
-        anim1Track:Stop()
-        anim2Track:Stop()
-        invertHighTrack:Stop()
-        invertUpsideDownTrack:Stop()
-        invertTorsoTrack:Stop()
-        
-    elseif currentMode == "GetSucked" then
-        invertHighOffset = invertHighOffset + (invertHighDirection * invertHighSpeed * dt)
-        
-        if invertHighOffset <= -1.6 then
-            invertHighDirection = 1
-            invertHighOffset = -1.6
-        elseif invertHighOffset >= -1 then
-            invertHighDirection = -1
-            invertHighOffset = -1
-        end
-        
-        local positionOffset = Vector3.new(0, 2.4, invertHighOffset)
-        local rotationOffset = CFrame.Angles(math.pi, 0, math.pi)
-        localRoot.CFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
-        
-        if not invertHighTrack.IsPlaying then
-            invertHighTrack:Play()
-            invertHighTrack.Looped = true
-            invertHighTrack:AdjustSpeed(5)
-        end
-        
-        anim1Track:Stop()
-        anim2Track:Stop()
-        invertUnderTrack:Stop()
-        invertUpsideDownTrack:Stop()
-        invertTorsoTrack:Stop()
-        
-    elseif currentMode == "69" then
-        local positionOffset = Vector3.new(0, 0, -1)
-        local rotationOffset = CFrame.Angles(math.pi, 0, 0)
-        localRoot.CFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
-        
-        if not invertUpsideDownTrack.IsPlaying then
-            invertUpsideDownTrack:Play()
-            invertUpsideDownTrack.Looped = true
-        end
-        
-        anim1Track:Stop()
-        anim2Track:Stop()
-        invertUnderTrack:Stop()
-        invertHighTrack:Stop()
-        invertTorsoTrack:Stop()
-        
-    elseif currentMode == "Missionary" then
-        local positionOffset = Vector3.new(0, 0, -1)
-        local rotationOffset = CFrame.Angles(0, math.pi, 0)
-        localRoot.CFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
-        
-        if not invertTorsoTrack.IsPlaying then
-            invertTorsoTrack:Play()
-            invertTorsoTrack.Looped = true
-        end
-        
-        anim1Track:Stop()
-        anim2Track:Stop()
-        invertUnderTrack:Stop()
-        invertHighTrack:Stop()
-        invertUpsideDownTrack:Stop()
     end
 end
 
 local Toggle = Tab:CreateToggle({
-    Name = "Start GettingFreaky [R6]",
+    Name = "FreakyToggle [R6]",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -1306,7 +1350,7 @@ local ClickTargetToggle = Tab:CreateToggle({
 })
 
 local AntiVoidToggle = Tab:CreateToggle({
-    Name = "AntiBang/Void Protection",
+    Name = "AntiVoid/Bang Prevention",
     CurrentValue = false,
     Flag = "Toggle2",
     Callback = function(Value)
@@ -1314,10 +1358,11 @@ local AntiVoidToggle = Tab:CreateToggle({
     end,
 })
 
+
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "BangType [R6]",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary"},
-    CurrentOption = {"Bang"},
+    Name = "Bang Type",
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary", "HeadSit", "Kiss"},
+    CurrentOption = {"None"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
@@ -1351,9 +1396,9 @@ local Dropdown = Tab:CreateDropdown({
     end,
 })
 
-local IntervalValue = "0.4"
+local IntervalValue = "0.5"
 local Input = Tab:CreateInput({
-    Name = "Interval",
+    Name = "Interval (Normal/Invert Modes)",
     CurrentValue = IntervalValue,
     PlaceholderText = "Enter interval in seconds",
     RemoveTextAfterFocusLost = false,
@@ -1389,6 +1434,9 @@ Players.PlayerRemoving:Connect(function()
         Dropdown:Refresh(getPlayerNames(), {})
     end
 end)
+
+-- Initialize animations with proper speeds
+initializeAnimations()
 
 local Divider = Tab:CreateDivider()
 
