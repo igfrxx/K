@@ -614,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.3)",
+   LoadingTitle = "HELLOO 🐟 v(0.4)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,7 +651,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added 2 more options in the bang type drop-down| Bugfixes 17"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added 3 More Option In the FreakyType Dropdown Updated AntiBang Prevention | Bugfixes 27"})
 local Tab = Window:CreateTab("Client", "user")
 
 local animationSpeedEnabled = false
@@ -907,6 +907,7 @@ local TweenService = game:GetService("TweenService")
 local VOID_THRESHOLD = -100
 local CHECK_INTERVAL = 0.01
 local CLICK_TARGET_HIGHLIGHT_DURATION = 1
+local VOID_RECOVERY_TIME = 0.03 -- Time in seconds before re-enabling
 
 -- Animation Templates
 local animationTemplates = {
@@ -916,7 +917,7 @@ local animationTemplates = {
         hrpRotation = {0, 0, 0},
         offset = {0, 0, 1},
         secondaryAnim = true,
-        secondaryAnimId = "rbxassetid://31319431",
+        secondaryAnimId = "rbxassetid://56153856",
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
@@ -928,7 +929,7 @@ local animationTemplates = {
         hrpRotation = {0, 0, 0},
         offset = {0, 0, -1},
         secondaryAnim = true,
-        secondaryAnimId = "rbxassetid://31319431",
+        secondaryAnimId = "rbxassetid://56153856",
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
@@ -966,6 +967,22 @@ local animationTemplates = {
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
         offset = {0, 0, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["AszOnFace"] = {
+        animId = "rbxassetid://48957148",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, -3, 1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["GrabHips"] = {
+        animId = "rbxassetid://56153856",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, 1.5},
         secondaryAnim = false,
         animSpeed = 1
     },
@@ -1011,6 +1028,10 @@ local clickConnection = nil
 local lastHighlight = nil
 local oscillateOffset = 0
 local oscillateDirection = 1
+local inVoidRecovery = false
+local voidRecoveryTimer = 0
+local needsRetoggle = false
+local Toggle = nil -- Will be set when creating the UI
 
 -- Animation tracks storage
 local animationTracks = {}
@@ -1213,7 +1234,7 @@ local function toggleClickTarget(enabled)
     end
 end
 
--- TP Loop function with proper animation speed control
+-- TP Loop function with void recovery and re-toggle
 local function tpLoop(dt)
     if not selectedPlayer or not selectedPlayer.Character then return end
     if not player.Character then return end
@@ -1223,8 +1244,34 @@ local function tpLoop(dt)
     if lastVoidCheck >= CHECK_INTERVAL then
         lastVoidCheck = 0
         if checkVoid() then
-            cleanup(true)
+            if not inVoidRecovery then
+                -- Stop animations when first entering void
+                cleanup(true)
+                inVoidRecovery = true
+                voidRecoveryTimer = 0
+                needsRetoggle = true
+            end
             return
+        end
+    end
+    
+    -- Handle void recovery timer
+    if inVoidRecovery then
+        voidRecoveryTimer = voidRecoveryTimer + dt
+        if voidRecoveryTimer >= VOID_RECOVERY_TIME then
+            inVoidRecovery = false
+            voidRecoveryTimer = 0
+            
+            -- Re-toggle if needed
+            if needsRetoggle and Toggle then
+                needsRetoggle = false
+                Toggle:Set(false)
+                task.wait(0.1)
+                Toggle:Set(true)
+                return
+            end
+        else
+            return -- Don't proceed with animations during recovery period
         end
     end
     
@@ -1292,13 +1339,11 @@ local function tpLoop(dt)
     
     -- Primary animation handling
     if primaryTrack then
-        -- Ensure speed is applied every frame
         if modeData.animSpeed then
             primaryTrack:AdjustSpeed(modeData.animSpeed)
         end
         
         if not modeData.looped then
-            -- Toggle animation based on interval
             animTime = animTime + dt
             if animTime >= modeData.interval then
                 animTime = 0
@@ -1318,7 +1363,6 @@ local function tpLoop(dt)
     
     -- Secondary animation handling
     if secondaryTrack then
-        -- Apply speed to secondary animation
         if modeData.secondaryAnimSpeed then
             secondaryTrack:AdjustSpeed(modeData.secondaryAnimSpeed)
         end
@@ -1340,8 +1384,9 @@ local function tpLoop(dt)
     end
 end
 
-local Toggle = Tab:CreateToggle({
-    Name = "FreakyToggle [R6]",
+-- UI Elements (assuming you're using a library like Rayfield)
+Toggle = Tab:CreateToggle({
+    Name = "GetFreaky [R6]",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -1358,7 +1403,6 @@ local Toggle = Tab:CreateToggle({
     end,
 })
 
--- UI Elements
 local ClickTargetToggle = Tab:CreateToggle({
     Name = "ClickTarget Selection",
     CurrentValue = false,
@@ -1369,7 +1413,7 @@ local ClickTargetToggle = Tab:CreateToggle({
 })
 
 local AntiVoidToggle = Tab:CreateToggle({
-    Name = "AntiVoid/Bang Prevention",
+    Name = "AntiBang Prevention",
     CurrentValue = false,
     Flag = "Toggle2",
     Callback = function(Value)
@@ -1377,11 +1421,10 @@ local AntiVoidToggle = Tab:CreateToggle({
     end,
 })
 
-
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "FreakyType",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary", "HeadSit", "Kiss", "Cuddle"},
-    CurrentOption = {"None"},
+    Name = "FreakType [R6]",
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "Missionary", "68", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
+    CurrentOption = {"Bang"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
