@@ -1396,9 +1396,9 @@ local Dropdown = Tab:CreateDropdown({
     end,
 })
 
-local IntervalValue = "0.5"
+local IntervalValue = "0.4"
 local Input = Tab:CreateInput({
-    Name = "Interval (Normal/Invert Modes)",
+    Name = "Interval",
     CurrentValue = IntervalValue,
     PlaceholderText = "Enter interval in seconds",
     RemoveTextAfterFocusLost = false,
