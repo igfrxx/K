@@ -614,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.4)", -- VZ
+   LoadingTitle = "HELLOO 🐟 v(0.5)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,63 +651,8 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added 3 More Option In the FreakyType Dropdown Updated AntiBang Prevention | Bugfixes 27"})
-local Tab = Window:CreateTab("Client", "user")
-
-local animationSpeedEnabled = false
-local currentSpeed = 10
-
-function AnimsSpeed(value)
-    local speed = tonumber(value)
-    if speed then
-        local player = game:GetService("Players").LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        task.spawn(function()
-            while animationSpeedEnabled do
-                task.wait()
-                local humanoid = character:FindFirstChildOfClass("Humanoid") or character:FindFirstChildOfClass("AnimationController")
-                if not humanoid or not character then continue end
-                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
-                    track:AdjustSpeed(speed)
-                end
-            end
-        end)
-        return "[Set to 1 to reset] Animation speed set to: " .. speed
-    else
-        return "Invalid animation speed."
-    end
-end
-
-local Toggle = Tab:CreateToggle({
-   Name = "Change AnimationSpeed",
-   CurrentValue = false,
-   Flag = "Toggle1",
-   Callback = function(Value)
-      animationSpeedEnabled = Value
-      if Value then
-         AnimsSpeed(currentSpeed)
-      else
-         AnimsSpeed(1) -- Reset to default speed when turned off
-      end
-   end,
-})
-
-local Slider = Tab:CreateSlider({
-   Name = "Set AnimationSpeed",
-   Range = {0, 100},
-   Increment = 10,
-   Suffix = "%",
-   CurrentValue = 10,
-   Flag = "Slider1",
-   Callback = function(Value)
-      currentSpeed = Value
-      if animationSpeedEnabled then
-         AnimsSpeed(currentSpeed)
-      end
-   end,
-})
-
-local Divider = Tab:CreateDivider()
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New Animations Tab | Bugfixes 27"})
+local Tab = Window:CreateTab("Client🐟", "user")
 
 local Toggle = Tab:CreateToggle({
     Name = "Change Walkspeed",
@@ -857,7 +802,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Cool stuff I made :)", "trash")
+local Tab = Window:CreateTab("Cool stuff I made :) 🐟", "trash")
 
 local Button = Tab:CreateButton({
    Name = "TerminalCmd",
@@ -880,7 +825,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Susy Stuff", "file")
+local Tab = Window:CreateTab("Susy Stuff ><((( >", "file")
 local Label = Tab:CreateLabel("KillerFish Gets Fishy🐟", "info")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
 local Divider = Tab:CreateDivider()
@@ -1637,6 +1582,153 @@ local Button = Tab:CreateButton({
    end,
 })
 
+local Tab = Window:CreateTab("Animations🐟", "activity")
+
+
+local animationSpeedEnabled = false
+local currentSpeed = 10
+
+function AnimsSpeed(value)
+    local speed = tonumber(value)
+    if speed then
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        task.spawn(function()
+            while animationSpeedEnabled do
+                task.wait()
+                local humanoid = character:FindFirstChildOfClass("Humanoid") or character:FindFirstChildOfClass("AnimationController")
+                if not humanoid or not character then continue end
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                    track:AdjustSpeed(speed)
+                end
+            end
+        end)
+        return "[Set to 1 to reset] Animation speed set to: " .. speed
+    else
+        return "Invalid animation speed."
+    end
+end
+
+local Toggle = Tab:CreateToggle({
+   Name = "Change AnimationSpeed",
+   CurrentValue = false,
+   Flag = "Toggle1",
+   Callback = function(Value)
+      animationSpeedEnabled = Value
+      if Value then
+         AnimsSpeed(currentSpeed)
+      else
+         AnimsSpeed(1) -- Reset to default speed when turned off
+      end
+   end,
+})
+
+local Slider = Tab:CreateSlider({
+   Name = "Set AnimationSpeed",
+   Range = {0, 100},
+   Increment = 10,
+   Suffix = "%",
+   CurrentValue = 10,
+   Flag = "Slider1",
+   Callback = function(Value)
+      currentSpeed = Value
+      if animationSpeedEnabled then
+         AnimsSpeed(currentSpeed)
+      end
+   end,
+})
+
+local Divider = Tab:CreateDivider()
+
+-- Table to store currently playing animations
+local PlayingAnimations = {}
+
+-- Function to create a toggle for an animation
+local function CreateAnimationToggle(animationId, name)
+    Tab:CreateToggle({
+        Name = name,
+        CurrentValue = false,
+        Flag = "Toggle_" .. name,
+        Callback = function(Value)
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+            if not humanoid then return end
+
+            if Value then
+                -- Play animation
+                local anim = Instance.new("Animation")
+                anim.AnimationId = animationId
+
+                local track = humanoid:LoadAnimation(anim)
+                track.Looped = true
+                track:Play()
+
+                -- Store it so we can stop it later
+                PlayingAnimations[name] = track
+            else
+                -- Stop animation
+                local track = PlayingAnimations[name]
+                if track then
+                    track:Stop()
+                    PlayingAnimations[name] = nil
+                end
+            end
+        end,
+    })
+end
+
+-- Call this for each animation:
+CreateAnimationToggle("rbxassetid://182436935", "Dance3")
+CreateAnimationToggle("rbxassetid://182436842", "Dance2")
+CreateAnimationToggle("rbxassetid://182435998", "Dance")
+CreateAnimationToggle("rbxassetid://52155728", "FluteDance")
+CreateAnimationToggle("rbxassetid://101862746", "FDance")
+CreateAnimationToggle("rbxassetid://27789359", "CDance")
+CreateAnimationToggle("rbxassetid://132149582", "DanceT")
+CreateAnimationToggle("rbxassetid://28156501", "Punch")
+CreateAnimationToggle("rbxassetid://28160593", "ArmFly")
+CreateAnimationToggle("rbxassetid://94700140", "Drink")
+CreateAnimationToggle("rbxassetid://32659699", "SwordJump")
+CreateAnimationToggle("rbxassetid://35154961", "HeadThrow")
+CreateAnimationToggle("rbxassetid://42070810", "Curl")
+CreateAnimationToggle("rbxassetid://42070871", "Pitchfork")
+CreateAnimationToggle("rbxassetid://182393478", "Hold")
+CreateAnimationToggle("rbxassetid://46196309", "Float")
+CreateAnimationToggle("rbxassetid://21417802", "BoardKick")
+CreateAnimationToggle("rbxassetid://30188122", "Grenade")
+CreateAnimationToggle("rbxassetid://31319431", "Still")
+CreateAnimationToggle("rbxassetid://287325678", "Crouch")
+CreateAnimationToggle("rbxassetid://33855276", "KickBack")
+CreateAnimationToggle("rbxassetid://87986341", "LegShake")
+CreateAnimationToggle("rbxassetid://216937924", "BendOver")
+CreateAnimationToggle("rbxassetid://148840371", "Bang")
+CreateAnimationToggle("rbxassetid://180436334", "Climb")
+CreateAnimationToggle("rbxassetid://130591500", "Walk")
+CreateAnimationToggle("rbxassetid://48138189", "Villager")
+CreateAnimationToggle("rbxassetid://68339848", "HeadBehind")
+CreateAnimationToggle("rbxassetid://56153856", "ArmsDown")
+CreateAnimationToggle("rbxassetid://128777973", "Wave")
+CreateAnimationToggle("rbxassetid://128853357", "Point")
+CreateAnimationToggle("rbxassetid://129423131", "Laugh")
+CreateAnimationToggle("rbxassetid://129423030", "Cheer")
+CreateAnimationToggle("rbxassetid://89283403", "Axe")
+CreateAnimationToggle("rbxassetid://73033721", "Scared")
+CreateAnimationToggle("rbxassetid://73137648", "Panick")
+CreateAnimationToggle("rbxassetid://73137669", "Scream")
+CreateAnimationToggle("rbxassetid://73177702", "ArmSpin")
+CreateAnimationToggle("rbxassetid://75354915", "Roar")
+CreateAnimationToggle("rbxassetid://75476727", "Wave2")
+CreateAnimationToggle("rbxassetid://78494810", "SprayPaint")
+CreateAnimationToggle("rbxassetid://85568863", "ArmDetach")
+CreateAnimationToggle("rbxassetid://86146856", "GetShot")
+CreateAnimationToggle("rbxassetid://86614939", "HeadGrab")
+CreateAnimationToggle("rbxassetid://90117804", "ImHere")
+CreateAnimationToggle("rbxassetid://90814669", "ArmBreak")
+CreateAnimationToggle("rbxassetid://204328711", "DinoWalk")
+CreateAnimationToggle("rbxassetid://103798833", "ArmBreak2")
+CreateAnimationToggle("rbxassetid://55791140", "Strum")
 
 local Tab = Window:CreateTab("Scripts that I got from walmart🐟", "box")
 
@@ -1683,7 +1775,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Admins", "user-check")
+local Tab = Window:CreateTab("Admins🐟", "user-check")
 
 local Button = Tab:CreateButton({
    Name = "Infinite Yield",
