@@ -940,10 +940,18 @@ local animationTemplates = {
         animSpeed = 5,
         oscillate = true,
         oscillateRange = {-1.6, -1},
-        oscillateSpeed = 1.5
+        oscillateSpeed = 3.7
     },
     ["Kiss"] = {
         animId = "rbxassetid://95390146",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 0, -1},
+        secondaryAnim = false,
+        animSpeed = 1
+    },
+    ["Cuddle"] = {
+        animId = "rbxassetid://180436334",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
         offset = {0, 0, -1},
@@ -1360,8 +1368,8 @@ local AntiVoidToggle = Tab:CreateToggle({
 
 
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "Bang Type",
-    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary", "HeadSit", "Kiss"},
+    Name = "FreakyType",
+    Options = {"Bang", "InvertBang", "Suck", "GetSucked", "69", "Missionary", "HeadSit", "Kiss", "Cuddle"},
     CurrentOption = {"None"},
     MultipleOptions = false,
     Flag = "Dropdown2",
