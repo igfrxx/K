@@ -1816,15 +1816,6 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Divider = Tab:CreateDivider()
-
-local Button = Tab:CreateButton({
-   Name = "MenaceHub (a bit to freaky ngl)",
-   Callback = function()
-   loadstring(game:HttpGet("https://raw.githubusercontent.com/M-E-N-A-C-E/Menace-Hub/refs/heads/main/Free%20Sus%20Missile", true))()
-   end,
-})
-
 local Tab = Window:CreateTab("Animations🐟", "activity")
 local Label = Tab:CreateLabel("All These Anims Are For R6", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
