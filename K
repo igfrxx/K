@@ -614,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.6)", -- VZ
+   LoadingTitle = "HELLOO 🐟 v(0.7)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,7 +651,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New Finish It Button In Susy Stuff Tab| Bugfixes 27"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New 2 Options In The Dropdown FreakyType On Susy Stuff | Bugfixes 27"})
 local Tab = Window:CreateTab("Client🐟", "user")
 
 local Toggle = Tab:CreateToggle({
@@ -852,7 +852,8 @@ local TweenService = game:GetService("TweenService")
 local VOID_THRESHOLD = -100
 local CHECK_INTERVAL = 0.01
 local CLICK_TARGET_HIGHLIGHT_DURATION = 1
-local VOID_RECOVERY_TIME = 0.03 -- Time in seconds before re-enabling
+local VOID_RECOVERY_TIME = 0.03
+
 
 -- Animation Templates
 local animationTemplates = {
@@ -954,6 +955,31 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
+    ["MovingHandPP"] = {
+        animId = "rbxassetid://85568863",
+        looped = true,
+        hrpRotation = {0, 0, 1.5707963267948966},
+        offset = {0.5, -4.6, 0},
+        secondaryAnim = false,
+        animSpeed = 1,
+        lookAtTarget = false,
+        initialSpeedDuration = 0.9,
+        finalSpeed = 0,
+        oscillate = true,
+        oscillateRange = {-1.6, -1},
+        oscillateSpeed = 4.7
+    },
+    ["HandPP"] = {
+        animId = "rbxassetid://85568863",
+        looped = true,
+        hrpRotation = {0, 0, 1.5707963267948966},
+        offset = {0.5, -4.6, -1},
+        secondaryAnim = false,
+        animSpeed = 1,
+        lookAtTarget = false,
+        initialSpeedDuration = 0.9,
+        finalSpeed = 0
+    },
     ["69"] = {
         animId = "rbxassetid://95390146",
         looped = true,
@@ -978,7 +1004,7 @@ local tping = false
 local connection = nil
 local animToggle = false
 local animTime = 0
-local currentMode = "Normal"
+local currentMode = "A1"
 local originalGravity = Workspace.Gravity
 local originalCFrame = nil
 local antiVoidEnabled = false
@@ -991,7 +1017,7 @@ local oscillateDirection = 1
 local inVoidRecovery = false
 local voidRecoveryTimer = 0
 local needsRetoggle = false
-local Toggle = nil -- Will be set when creating the UI
+local Toggle = nil
 
 -- Animation tracks storage
 local animationTracks = {}
@@ -1054,6 +1080,13 @@ local function cleanup(forceReturn)
     end
     for _, track in pairs(secondaryAnimationTracks) do
         if track then track:Stop() end
+    end
+    
+    -- Reset animation timers
+    for _, data in pairs(animationTemplates) do
+        if data.speedTimer then
+            data.speedTimer = 0
+        end
     end
     
     animToggle = false
@@ -1205,7 +1238,6 @@ local function tpLoop(dt)
         lastVoidCheck = 0
         if checkVoid() then
             if not inVoidRecovery then
-                -- Stop animations when first entering void
                 cleanup(true)
                 inVoidRecovery = true
                 voidRecoveryTimer = 0
@@ -1231,7 +1263,7 @@ local function tpLoop(dt)
                 return
             end
         else
-            return -- Don't proceed with animations during recovery period
+            return
         end
     end
     
@@ -1297,9 +1329,17 @@ local function tpLoop(dt)
     local primaryTrack = animationTracks[currentMode]
     local secondaryTrack = secondaryAnimationTracks[currentMode]
     
-    -- Primary animation handling
+    -- Primary animation handling (with A13 special case)
     if primaryTrack then
-        if modeData.animSpeed then
+        -- Special speed handling for A13
+        if modeData.initialSpeedDuration then
+            modeData.speedTimer = (modeData.speedTimer or 0) + dt
+            if modeData.speedTimer <= modeData.initialSpeedDuration then
+                primaryTrack:AdjustSpeed(modeData.animSpeed or 1)
+            else
+                primaryTrack:AdjustSpeed(modeData.finalSpeed or 0)
+            end
+        elseif modeData.animSpeed then
             primaryTrack:AdjustSpeed(modeData.animSpeed)
         end
         
@@ -1344,7 +1384,7 @@ local function tpLoop(dt)
     end
 end
 
--- UI Elements (assuming you're using a library like Rayfield)
+-- UI Elements (assuming Rayfield library)
 Toggle = Tab:CreateToggle({
     Name = "GetFreaky [R6]",
     CurrentValue = false,
@@ -1387,7 +1427,7 @@ local Button = Tab:CreateButton({
        local waitDuration = 3
        local startTime = tick()
        local maxSpeedMultiplier = 3
-       local phase = "speedingUp" -- "speedingUp", "slowingDown", "waiting", "done"
+       local phase = "speedingUp"
        local zeroReachedTime = nil
        
        -- Connection handle
@@ -1397,19 +1437,17 @@ local Button = Tab:CreateButton({
            local currentTime = tick()
            local elapsed = currentTime - startTime
            
-           -- Phase transitions
            if phase == "speedingUp" and elapsed >= speedUpDuration then
                phase = "slowingDown"
-               startTime = currentTime -- Reset timer for slowing down phase
+               startTime = currentTime
            elseif phase == "slowingDown" and elapsed >= slowDownDuration then
                phase = "waiting"
                zeroReachedTime = currentTime
-               startTime = currentTime -- Reset timer for waiting phase
+               startTime = currentTime
            elseif phase == "waiting" and (currentTime - zeroReachedTime) >= waitDuration then
                phase = "done"
            end
            
-           -- Calculate current speed multiplier based on phase
            local speedMultiplier = 1
            if phase == "speedingUp" then
                local progress = math.min(elapsed / speedUpDuration, 1)
@@ -1420,10 +1458,8 @@ local Button = Tab:CreateButton({
            elseif phase == "waiting" then
                speedMultiplier = 0
            elseif phase == "done" then
-               -- Final cleanup
                cleanup()
                
-               -- Restore original speeds
                for mode, speeds in pairs(originalSpeeds) do
                    if animationTemplates[mode] then
                        animationTemplates[mode].animSpeed = speeds.animSpeed
@@ -1434,7 +1470,6 @@ local Button = Tab:CreateButton({
                    end
                end
                
-               -- Update any playing tracks
                if animationTracks[currentMode] and animationTracks[currentMode].IsPlaying then
                    animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
                end
@@ -1443,14 +1478,12 @@ local Button = Tab:CreateButton({
                    secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
                end
                
-               -- Disconnect the loop
                if speedUpdateConnection then
                    speedUpdateConnection:Disconnect()
                end
                return
            end
            
-           -- Apply speed changes
            if animationTemplates[currentMode].animSpeed then
                animationTemplates[currentMode].animSpeed = currentOriginalAnimSpeed * speedMultiplier
            end
@@ -1463,7 +1496,6 @@ local Button = Tab:CreateButton({
                animationTemplates[currentMode].oscillateSpeed = currentOriginalOscillateSpeed * speedMultiplier
            end
            
-           -- Update animation tracks
            if animationTracks[currentMode] then
                animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
            end
@@ -1473,7 +1505,6 @@ local Button = Tab:CreateButton({
            end
        end
        
-       -- Start the update loop
        speedUpdateConnection = RunService.Heartbeat:Connect(updateSpeeds)
    end
 })
@@ -1496,10 +1527,17 @@ local AntiVoidToggle = Tab:CreateToggle({
     end,
 })
 
+-- Create a sorted list of animation template keys for the dropdown
+local animationOptions = {}
+for key in pairs(animationTemplates) do
+    table.insert(animationOptions, key)
+end
+table.sort(animationOptions)
+
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "FreakType [R6]",
-    Options = {"Bang", "InvertBang", "InvertBang2", "Suck", "GetSucked", "Missionary", "69", "AszOnFace", "GrabHips", "Kiss", "HeadSit", "Cuddle"},
-    CurrentOption = {"None"},
+    Name = "FreakyType [R6]",
+    Options = animationOptions,
+    CurrentOption = {"Bang"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
