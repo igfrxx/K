@@ -838,6 +838,8 @@ local Divider = Tab:CreateDivider()
 -- Kiss
 -- Cuddle
 -- HeadSit
+-- MovingHandPP
+-- HandPP
 -- 69
 -- Missionary
 
@@ -955,6 +957,21 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
+    ["HandPP"] = {
+        animId = "rbxassetid://85568863",
+        looped = true,
+        hrpRotation = {0, 0, 1.5707963267948966},
+        offset = {0.5, -4.6, -1},
+        secondaryAnim = false,
+        animSpeed = 1,
+        lookAtTarget = false,
+        initialSpeedDuration = 0.9,
+        finalSpeed = 0,
+        trackJump = true,  -- New property to identify jump-sensitive animations
+        jumpOffset = -30,   -- How much to move down when target jumps
+        originalYOffset = -4.6,  -- Store the original Y offset
+        jumpCooldown = 1.5  -- Cooldown between jump reactions
+    },
     ["MovingHandPP"] = {
         animId = "rbxassetid://85568863",
         looped = true,
@@ -967,18 +984,11 @@ local animationTemplates = {
         finalSpeed = 0,
         oscillate = true,
         oscillateRange = {-1.6, -1},
-        oscillateSpeed = 4.7
-    },
-    ["HandPP"] = {
-        animId = "rbxassetid://85568863",
-        looped = true,
-        hrpRotation = {0, 0, 1.5707963267948966},
-        offset = {0.5, -4.6, -1},
-        secondaryAnim = false,
-        animSpeed = 1,
-        lookAtTarget = false,
-        initialSpeedDuration = 0.9,
-        finalSpeed = 0
+        oscillateSpeed = 4.7,
+        trackJump = true,  -- New property to identify jump-sensitive animations
+        jumpOffset = -30,   -- How much to move down when target jumps
+        originalYOffset = -4.6,  -- Store the original Y offset
+        jumpCooldown = 1.5  -- Cooldown between jump reactions
     },
     ["69"] = {
         animId = "rbxassetid://95390146",
@@ -1018,6 +1028,27 @@ local inVoidRecovery = false
 local voidRecoveryTimer = 0
 local needsRetoggle = false
 local Toggle = nil
+local lastJumpTime = 0
+local lastTargetPositionY = nil
+local isJumping = false
+local jumpTimer = 0
+
+-- Jump detection function
+local function checkForJump(targetRoot, dt)
+    if not targetRoot then return false end
+    
+    local currentY = targetRoot.Position.Y
+    local isJumpingNow = false
+    
+    if lastTargetPositionY then
+        if (currentY - lastTargetPositionY) > 0.1 then
+            isJumpingNow = true
+        end
+    end
+    
+    lastTargetPositionY = currentY
+    return isJumpingNow
+end
 
 -- Animation tracks storage
 local animationTracks = {}
@@ -1304,13 +1335,57 @@ local function tpLoop(dt)
         zOffset = oscillateOffset
     end
     
-    -- Calculate position and rotation
+    -- Calculate base position offset
     local positionOffset = Vector3.new(
         modeData.offset[1],
         modeData.offset[2],
         zOffset
     )
     
+    -- Handle jump reaction for A13 and A14
+    if modeData.trackJump then
+        -- Check for jump
+        local justJumped = false
+        local currentY = targetRoot.Position.Y
+        
+        if lastTargetPositionY then
+            -- If Y position increased significantly, they're jumping
+            if (currentY - lastTargetPositionY) > 0.1 then
+                justJumped = true
+            end
+        end
+        
+        lastTargetPositionY = currentY
+        
+        if justJumped and (tick() - lastJumpTime) > modeData.jumpCooldown then
+            lastJumpTime = tick()
+            isJumping = true
+            jumpTimer = 0.3  -- Duration of jump reaction
+            positionOffset = Vector3.new(
+                positionOffset.X,
+                modeData.originalYOffset + modeData.jumpOffset,
+                positionOffset.Z
+            )
+        elseif isJumping then
+            jumpTimer = jumpTimer - dt
+            if jumpTimer <= 0 then
+                isJumping = false
+                positionOffset = Vector3.new(
+                    positionOffset.X,
+                    modeData.originalYOffset,
+                    positionOffset.Z
+                )
+            else
+                positionOffset = Vector3.new(
+                    positionOffset.X,
+                    modeData.originalYOffset + modeData.jumpOffset,
+                    positionOffset.Z
+                )
+            end
+        end
+    end
+    
+    -- Calculate rotation
     local rotationOffset = CFrame.Angles(
         modeData.hrpRotation[1],
         modeData.hrpRotation[2],
@@ -1329,9 +1404,9 @@ local function tpLoop(dt)
     local primaryTrack = animationTracks[currentMode]
     local secondaryTrack = secondaryAnimationTracks[currentMode]
     
-    -- Primary animation handling (with A13 special case)
+    -- Primary animation handling
     if primaryTrack then
-        -- Special speed handling for A13
+        -- Special speed handling for initial duration
         if modeData.initialSpeedDuration then
             modeData.speedTimer = (modeData.speedTimer or 0) + dt
             if modeData.speedTimer <= modeData.initialSpeedDuration then
