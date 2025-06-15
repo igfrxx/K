@@ -614,7 +614,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.5)", -- VZ
+   LoadingTitle = "HELLOO 🐟 v(0.6)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,7 +651,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New Animations Tab | Bugfixes 27"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New Finish It Button In Susy Stuff Tab| Bugfixes 27"})
 local Tab = Window:CreateTab("Client🐟", "user")
 
 local Toggle = Tab:CreateToggle({
@@ -1361,6 +1361,121 @@ Toggle = Tab:CreateToggle({
             cleanup()
         end
     end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Finish It 💦",
+   Callback = function()
+       -- Store original speeds for all animation modes
+       local originalSpeeds = {}
+       for mode, data in pairs(animationTemplates) do
+           originalSpeeds[mode] = {
+               animSpeed = data.animSpeed,
+               secondaryAnimSpeed = data.secondaryAnimSpeed,
+               oscillateSpeed = data.oscillateSpeed
+           }
+       end
+       
+       -- Store current mode's original speeds
+       local currentOriginalAnimSpeed = animationTemplates[currentMode].animSpeed or 1
+       local currentOriginalSecondaryAnimSpeed = animationTemplates[currentMode].secondaryAnimSpeed or 1
+       local currentOriginalOscillateSpeed = animationTemplates[currentMode].oscillateSpeed or 0
+       
+       -- Timing control
+       local speedUpDuration = 5
+       local slowDownDuration = 6
+       local waitDuration = 3
+       local startTime = tick()
+       local maxSpeedMultiplier = 3
+       local phase = "speedingUp" -- "speedingUp", "slowingDown", "waiting", "done"
+       local zeroReachedTime = nil
+       
+       -- Connection handle
+       local speedUpdateConnection
+       
+       local function updateSpeeds()
+           local currentTime = tick()
+           local elapsed = currentTime - startTime
+           
+           -- Phase transitions
+           if phase == "speedingUp" and elapsed >= speedUpDuration then
+               phase = "slowingDown"
+               startTime = currentTime -- Reset timer for slowing down phase
+           elseif phase == "slowingDown" and elapsed >= slowDownDuration then
+               phase = "waiting"
+               zeroReachedTime = currentTime
+               startTime = currentTime -- Reset timer for waiting phase
+           elseif phase == "waiting" and (currentTime - zeroReachedTime) >= waitDuration then
+               phase = "done"
+           end
+           
+           -- Calculate current speed multiplier based on phase
+           local speedMultiplier = 1
+           if phase == "speedingUp" then
+               local progress = math.min(elapsed / speedUpDuration, 1)
+               speedMultiplier = 1 + ((maxSpeedMultiplier - 1) * progress)
+           elseif phase == "slowingDown" then
+               local progress = math.min(elapsed / slowDownDuration, 1)
+               speedMultiplier = maxSpeedMultiplier - ((maxSpeedMultiplier - 1) * progress)
+           elseif phase == "waiting" then
+               speedMultiplier = 0
+           elseif phase == "done" then
+               -- Final cleanup
+               cleanup()
+               
+               -- Restore original speeds
+               for mode, speeds in pairs(originalSpeeds) do
+                   if animationTemplates[mode] then
+                       animationTemplates[mode].animSpeed = speeds.animSpeed
+                       animationTemplates[mode].secondaryAnimSpeed = speeds.secondaryAnimSpeed
+                       if animationTemplates[mode].oscillateSpeed then
+                           animationTemplates[mode].oscillateSpeed = speeds.oscillateSpeed
+                       end
+                   end
+               end
+               
+               -- Update any playing tracks
+               if animationTracks[currentMode] and animationTracks[currentMode].IsPlaying then
+                   animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
+               end
+               
+               if secondaryAnimationTracks[currentMode] and secondaryAnimationTracks[currentMode].IsPlaying then
+                   secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
+               end
+               
+               -- Disconnect the loop
+               if speedUpdateConnection then
+                   speedUpdateConnection:Disconnect()
+               end
+               return
+           end
+           
+           -- Apply speed changes
+           if animationTemplates[currentMode].animSpeed then
+               animationTemplates[currentMode].animSpeed = currentOriginalAnimSpeed * speedMultiplier
+           end
+           
+           if animationTemplates[currentMode].secondaryAnimSpeed then
+               animationTemplates[currentMode].secondaryAnimSpeed = currentOriginalSecondaryAnimSpeed * speedMultiplier
+           end
+           
+           if animationTemplates[currentMode].oscillateSpeed then
+               animationTemplates[currentMode].oscillateSpeed = currentOriginalOscillateSpeed * speedMultiplier
+           end
+           
+           -- Update animation tracks
+           if animationTracks[currentMode] then
+               animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
+           end
+           
+           if secondaryAnimationTracks[currentMode] then
+               secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
+           end
+       end
+       
+       -- Start the update loop
+       speedUpdateConnection = RunService.Heartbeat:Connect(updateSpeeds)
+   end
 })
 
 local ClickTargetToggle = Tab:CreateToggle({
