@@ -838,8 +838,8 @@ local Divider = Tab:CreateDivider()
 -- Kiss
 -- Cuddle
 -- HeadSit
--- MovingHandPP
 -- HandPP
+-- MovingHandPP
 -- 69
 -- Missionary
 
@@ -1612,7 +1612,7 @@ table.sort(animationOptions)
 local ModeDropdown = Tab:CreateDropdown({
     Name = "FreakyType [R6]",
     Options = animationOptions,
-    CurrentOption = {"Bang"},
+    CurrentOption = {"None"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
