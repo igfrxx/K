@@ -859,7 +859,7 @@ local VOID_RECOVERY_TIME = 0.03
 
 -- Animation Templates
 local animationTemplates = {
-    ["Bang"] = {
+    ["1. Bang"] = {
         animId = "rbxassetid://216937924",
         looped = false,
         hrpRotation = {0, 0, 0},
@@ -871,7 +871,7 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
-    ["InvertBang"] = {
+    ["2. InvertBang"] = {
         animId = "rbxassetid://216937924",
         looped = false,
         hrpRotation = {0, 0, 0},
@@ -883,7 +883,7 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
-    ["InvertBang2"] = {
+    ["3. InvertBang2"] = {
         animId = "rbxassetid://173820337",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -898,7 +898,7 @@ local animationTemplates = {
         oscillateRange = {-1.6, -1},
         oscillateSpeed = 5.7
     },
-    ["Suck"] = {
+    ["4. Suck"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -906,7 +906,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["GetSucked"] = {
+    ["5. GetSucked"] = {
         animId = "rbxassetid://79155149",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -917,7 +917,7 @@ local animationTemplates = {
         oscillateRange = {-1.6, -1},
         oscillateSpeed = 3.7
     },
-    ["Kiss"] = {
+    ["6. Kiss"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -925,7 +925,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["Cuddle"] = {
+    ["7. Cuddle"] = {
         animId = "rbxassetid://180436334",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -933,7 +933,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["AszOnFace"] = {
+    ["8. AszOnFace"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -941,7 +941,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.1
     },
-    ["GrabHips"] = {
+    ["9. GrabHips"] = {
         animId = "rbxassetid://56153856",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -949,7 +949,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["HeadSit"] = {
+    ["10. HeadSit"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -957,7 +957,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["HandPP"] = {
+    ["11. HandPP"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
@@ -970,9 +970,9 @@ local animationTemplates = {
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
         originalYOffset = -4.6,  -- Store the original Y offset
-        jumpCooldown = 1.5  -- Cooldown between jump reactions
+        jumpCooldown = 0  -- Cooldown between jump reactions
     },
-    ["MovingHandPP"] = {
+    ["12. MovingHandPP"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
@@ -988,9 +988,9 @@ local animationTemplates = {
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
         originalYOffset = -4.6,  -- Store the original Y offset
-        jumpCooldown = 1.5  -- Cooldown between jump reactions
+        jumpCooldown = 0  -- Cooldown between jump reactions
     },
-    ["69"] = {
+    ["13. 69"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, 0},
@@ -998,7 +998,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["Missionary"] = {
+    ["14. Missionary"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, math.pi, 0},
@@ -1459,9 +1459,11 @@ local function tpLoop(dt)
     end
 end
 
+local Section = Tab:CreateSection("ℹ️: Click StartFreaky To Start The Script")
+
 -- UI Elements (assuming Rayfield library)
 Toggle = Tab:CreateToggle({
-    Name = "GetFreaky [R6]",
+    Name = "StartFreaky [R6]",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -1602,17 +1604,23 @@ local AntiVoidToggle = Tab:CreateToggle({
     end,
 })
 
--- Create a sorted list of animation template keys for the dropdown
 local animationOptions = {}
 for key in pairs(animationTemplates) do
     table.insert(animationOptions, key)
 end
-table.sort(animationOptions)
 
+-- Sort numerically based on the prefix number
+table.sort(animationOptions, function(a, b)
+    local numA = tonumber(a:match("^(%d+)"))
+    local numB = tonumber(b:match("^(%d+)"))
+    return numA < numB
+end)
+
+-- Create the dropdown
 local ModeDropdown = Tab:CreateDropdown({
     Name = "FreakyType [R6]",
     Options = animationOptions,
-    CurrentOption = {"None"},
+    CurrentOption = {"None (SELECT ANIMATION)"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
