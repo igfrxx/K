@@ -843,6 +843,38 @@ local Divider = Tab:CreateDivider()
 -- 69
 -- Missionary
 
+-- View Target Script
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- Global View function
+_G.View = function(targetName)
+    local target = Players:FindFirstChild(targetName)
+    if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+        -- Wait for HumanoidRootPart
+        local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            Camera.CameraSubject = target.Character:FindFirstChild("Humanoid")
+            Camera.CameraType = Enum.CameraType.Custom
+            viewingTarget = true
+            print("Now viewing: " .. targetName)
+        else
+            warn("Target does not have HumanoidRootPart")
+        end
+    else
+        warn("Player not found or not fully loaded.")
+    end
+end
+
+-- Optional Unview Function
+_G.Unview = function()
+    Camera.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") or LocalPlayer
+    Camera.CameraType = Enum.CameraType.Custom
+    viewingTarget = false
+    print("Returned to your own view.")
+end
+
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -855,7 +887,6 @@ local VOID_THRESHOLD = -100
 local CHECK_INTERVAL = 0.01
 local CLICK_TARGET_HIGHLIGHT_DURATION = 1
 local VOID_RECOVERY_TIME = 0.03
-
 
 -- Animation Templates
 local animationTemplates = {
@@ -970,7 +1001,8 @@ local animationTemplates = {
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
         originalYOffset = -4.6,  -- Store the original Y offset
-        jumpCooldown = 0  -- Cooldown between jump reactions
+        jumpCooldown = 0,  -- Cooldown between jump reactions
+        ViewTarget = true
     },
     ["12. MovingHandPP"] = {
         animId = "rbxassetid://85568863",
@@ -988,7 +1020,8 @@ local animationTemplates = {
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
         originalYOffset = -4.6,  -- Store the original Y offset
-        jumpCooldown = 0  -- Cooldown between jump reactions
+        jumpCooldown = 0,  -- Cooldown between jump reactions
+        ViewTarget = true
     },
     ["13. 69"] = {
         animId = "rbxassetid://95390146",
@@ -1014,7 +1047,7 @@ local tping = false
 local connection = nil
 local animToggle = false
 local animTime = 0
-local currentMode = "A1"
+local currentMode = "1. Bang"
 local originalGravity = Workspace.Gravity
 local originalCFrame = nil
 local antiVoidEnabled = false
@@ -1032,6 +1065,7 @@ local lastJumpTime = 0
 local lastTargetPositionY = nil
 local isJumping = false
 local jumpTimer = 0
+local viewingTarget = false
 
 -- Jump detection function
 local function checkForJump(targetRoot, dt)
@@ -1125,6 +1159,12 @@ local function cleanup(forceReturn)
     oscillateOffset = 0
     oscillateDirection = 1
     
+    -- Reset camera view
+    if viewingTarget then
+        workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
+        viewingTarget = false
+    end
+    
     if (forceReturn or not tping) and humanoidRootPart and originalCFrame then
         humanoidRootPart.CFrame = originalCFrame
     end
@@ -1176,6 +1216,15 @@ local function selectPlayerByCharacter(targetCharacter)
             if Dropdown then
                 Dropdown:Set({player.Name})
             end
+            
+            -- Update camera view if we're currently viewing a target and the mode supports it
+            if tping and viewingTarget then
+                local modeData = animationTemplates[currentMode]
+                if modeData and modeData.ViewTarget and player.Character and player.Character:FindFirstChild("Humanoid") then
+                    workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+                end
+            end
+            
             return true
         end
     end
@@ -1260,7 +1309,14 @@ end
 
 -- TP Loop function with void recovery and re-toggle
 local function tpLoop(dt)
-    if not selectedPlayer or not selectedPlayer.Character then return end
+    if not selectedPlayer or not selectedPlayer.Character then 
+        -- Reset camera if no target
+        if viewingTarget then
+            workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
+            viewingTarget = false
+        end
+        return 
+    end
     if not player.Character then return end
     
     -- Void check
@@ -1300,9 +1356,27 @@ local function tpLoop(dt)
     
     local targetChar = selectedPlayer.Character
     local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+    local targetHead = targetChar:FindFirstChild("Head")
+    local targetHumanoid = targetChar:FindFirstChild("Humanoid")
     local localRoot = player.Character:FindFirstChild("HumanoidRootPart")
     
     if not targetRoot or not localRoot then return end
+    
+    -- Get current mode data
+    local modeData = animationTemplates[currentMode]
+    if not modeData then return end
+    
+    -- Handle camera view based on ViewTarget setting and whether the main toggle is enabled
+    if tping and modeData.ViewTarget and targetHumanoid then
+        if not viewingTarget then
+            workspace.CurrentCamera.CameraSubject = targetHumanoid
+            workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+            viewingTarget = true
+        end
+    elseif viewingTarget then
+        workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid") or player
+        viewingTarget = false
+    end
     
     -- Physics setup
     Workspace.Gravity = 0
@@ -1316,10 +1390,6 @@ local function tpLoop(dt)
     else
         localRoot.BodyVelocity.Velocity = Vector3.new()
     end
-    
-    -- Get current mode data
-    local modeData = animationTemplates[currentMode]
-    if not modeData then return end
     
     -- Handle oscillation if enabled
     local zOffset = modeData.offset[3]
@@ -1342,7 +1412,7 @@ local function tpLoop(dt)
         zOffset
     )
     
-    -- Handle jump reaction for A13 and A14
+    -- Handle jump reaction for specific animations
     if modeData.trackJump then
         -- Check for jump
         local justJumped = false
@@ -1406,7 +1476,6 @@ local function tpLoop(dt)
     
     -- Primary animation handling
     if primaryTrack then
-        -- Special speed handling for initial duration
         if modeData.initialSpeedDuration then
             modeData.speedTimer = (modeData.speedTimer or 0) + dt
             if modeData.speedTimer <= modeData.initialSpeedDuration then
@@ -1481,7 +1550,7 @@ Toggle = Tab:CreateToggle({
 })
 
 local Button = Tab:CreateButton({
-   Name = "Finish It 💦",
+   Name = "Cvm💦",
    Callback = function()
        -- Store original speeds for all animation modes
        local originalSpeeds = {}
@@ -1555,6 +1624,12 @@ local Button = Tab:CreateButton({
                    secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
                end
                
+               -- Reset camera view when done
+               if viewingTarget then
+                   workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
+                   viewingTarget = false
+               end
+               
                if speedUpdateConnection then
                    speedUpdateConnection:Disconnect()
                end
@@ -1620,7 +1695,7 @@ end)
 local ModeDropdown = Tab:CreateDropdown({
     Name = "FreakyType [R6]",
     Options = animationOptions,
-    CurrentOption = {"None (SELECT ANIMATION)"},
+    CurrentOption = {"1. Bang"},
     MultipleOptions = false,
     Flag = "Dropdown2",
     Callback = function(Option)
@@ -1645,11 +1720,23 @@ local Dropdown = Tab:CreateDropdown({
             for _, v in ipairs(Players:GetPlayers()) do
                 if v.Name == Option[1] then
                     selectedPlayer = v
+                    -- Update camera view if we're currently viewing a target and the mode supports it
+                    if tping and viewingTarget then
+                        local modeData = animationTemplates[currentMode]
+                        if modeData and modeData.ViewTarget and v.Character and v.Character:FindFirstChild("Humanoid") then
+                            workspace.CurrentCamera.CameraSubject = v.Character:FindFirstChild("Humanoid")
+                        end
+                    end
                     break
                 end
             end
         else
             selectedPlayer = nil
+            -- Reset camera view if no target selected
+            if viewingTarget then
+                workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
+                viewingTarget = false
+            end
         end
     end,
 })
