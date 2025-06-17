@@ -13,6 +13,113 @@ function PlaySound(id, volume)
     return sound
 end
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local afon = {
+    active = false,
+    connections = {},
+    trackedPlayers = {}
+}
+
+-- Function to handle a single character
+local function handleCharacter(character, enableNoCollide)
+    if not character or not character:IsDescendantOf(workspace) then return end
+    
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if enableNoCollide then
+                part.CanCollide = false
+            else
+                part.CanCollide = true
+            end
+        end
+    end
+end
+
+-- Track when players' characters are added
+local function trackPlayer(player)
+    local function onCharacterAdded(character)
+        if not afon.active then return end
+        handleCharacter(character, player == afon.speaker or not afon.onlyLocal)
+    end
+    
+    afon.trackedPlayers[player] = player.CharacterAdded:Connect(onCharacterAdded)
+    if player.Character then
+        onCharacterAdded(player.Character)
+    end
+end
+
+-- Cleanup tracked players
+local function cleanupTrackedPlayers()
+    for player, conn in pairs(afon.trackedPlayers) do
+        conn:Disconnect()
+        -- Restore collisions when turning off
+        if player.Character then
+            handleCharacter(player.Character, false)
+        end
+    end
+    afon.trackedPlayers = {}
+end
+
+function afon.on(speaker, onlyLocal)
+    afon.off() -- Turn off any existing instance
+    
+    afon.active = true
+    afon.speaker = speaker
+    afon.onlyLocal = onlyLocal or false
+    
+    -- Handle local player
+    if speaker.Character then
+        handleCharacter(speaker.Character, true)
+    end
+    
+    -- Track local player's character changes
+    trackPlayer(speaker)
+    
+    if not onlyLocal then
+        -- Track all other players
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= speaker then
+                trackPlayer(player)
+            end
+        end
+        
+        -- Track new players joining
+        table.insert(afon.connections, Players.PlayerAdded:Connect(function(player)
+            trackPlayer(player)
+        end))
+    end
+    
+    -- Track local player leaving to cleanup
+    table.insert(afon.connections, speaker.CharacterAdded:Connect(function(character)
+        handleCharacter(character, true)
+    end))
+end
+
+function afon.off()
+    if not afon.active then return end
+    
+    afon.active = false
+    
+    -- Disconnect all event connections
+    for _, conn in ipairs(afon.connections) do
+        conn:Disconnect()
+    end
+    afon.connections = {}
+    
+    -- Cleanup tracked players
+    cleanupTrackedPlayers()
+    
+    -- Restore local player collisions
+    if afon.speaker and afon.speaker.Character then
+        handleCharacter(afon.speaker.Character, false)
+    end
+end
+
+afon.on(game.Players.LocalPlayer, true)
+afon.on(game.Players.LocalPlayer)
+
 -- Roblox Killer Fish Intro Script
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -614,7 +721,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.8)", -- VZ
+   LoadingTitle = "HELLOO 🐟 v(0.9)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -651,7 +758,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New Tab Added Called Protection | Bugfixes 41"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New 2 Option in the freakytype in Susy stuff | Bugfixes 41"})
 local Tab = Window:CreateTab("Client🐟", "user")
 
 local Toggle = Tab:CreateToggle({
@@ -1103,22 +1210,40 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
-    ["3. InvertBang2"] = {
-        animId = "rbxassetid://173820337",
+    ["3. Dog"] = {
+        animId = "rbxassetid://48957148",
         looped = true,
+        layingPos = true,
+        invertedLayingPos = true,
         hrpRotation = {0, 0, 0},
-        offset = {0, 1.1, -1.9},
+        offset = {0, -0.5, -2},
         secondaryAnim = true,
-        secondaryAnimId = "rbxassetid://182749109",
+        secondaryAnimId = "rbxassetid://48957148",
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
         secondaryAnimSpeed = 1,
         oscillate = true,
-        oscillateRange = {-1.6, -1},
-        oscillateSpeed = 5.7
+        oscillateRange = {-2.6, -2},
+        oscillateSpeed = 2.5
     },
-    ["4. Suck"] = {
+    ["4. Dog2"] = {
+        animId = "rbxassetid://48957148",
+        looped = true,
+        layingPos = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, -0.5, -2},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://48957148",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 1,
+        oscillate = true,
+        oscillateRange = {-2.6, -2},
+        oscillateSpeed = 2.5
+    },
+    ["5. Suck"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1126,7 +1251,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["5. GetSucked"] = {
+    ["6. GetSucked"] = {
         animId = "rbxassetid://79155149",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1137,7 +1262,7 @@ local animationTemplates = {
         oscillateRange = {-1.6, -1},
         oscillateSpeed = 3.7
     },
-    ["6. Kiss"] = {
+    ["7. Kiss"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1145,7 +1270,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["7. Cuddle"] = {
+    ["8. Cuddle"] = {
         animId = "rbxassetid://180436334",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1153,7 +1278,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["8. AszOnFace"] = {
+    ["9. AszOnFace"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1161,7 +1286,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.1
     },
-    ["9. GrabHips"] = {
+    ["10. GrabHips"] = {
         animId = "rbxassetid://56153856",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1169,7 +1294,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["10. HeadSit"] = {
+    ["11. HeadSit"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1177,15 +1302,14 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["11. HandPP"] = {
+    ["12. HandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
-        offset = {0.5, -4.6, -1},
-        secondaryAnim = false,
+        offset = {0.5, -4.4, -1},
         animSpeed = 1,
         lookAtTarget = false,
-        initialSpeedDuration = 0.9,
+        initialSpeedDuration = 0.80,
         finalSpeed = 0,
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
@@ -1193,15 +1317,14 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["12. MovingHandPP"] = {
+    ["13. MovingHandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
-        offset = {0.5, -4.6, 0},
-        secondaryAnim = false,
+        offset = {0.5, -4.4, 0},
         animSpeed = 1,
         lookAtTarget = false,
-        initialSpeedDuration = 0.9,
+        initialSpeedDuration = 0.80,
         finalSpeed = 0,
         oscillate = true,
         oscillateRange = {-1.6, -1},
@@ -1212,7 +1335,7 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["13. 69"] = {
+    ["14. 69"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, 0},
@@ -1220,7 +1343,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["14. Missionary"] = {
+    ["15. Missionary"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, math.pi, 0},
@@ -1548,6 +1671,7 @@ local function tpLoop(dt)
     local targetHead = targetChar:FindFirstChild("Head")
     local targetHumanoid = targetChar:FindFirstChild("Humanoid")
     local localRoot = player.Character:FindFirstChild("HumanoidRootPart")
+    local localHumanoid = player.Character:FindFirstChild("Humanoid")
     
     if not targetRoot or not localRoot then return end
     
@@ -1555,7 +1679,7 @@ local function tpLoop(dt)
     local modeData = animationTemplates[currentMode]
     if not modeData then return end
     
-    -- Handle camera view based on ViewTarget setting and whether the main toggle is enabled
+    -- Handle camera view based on ViewTarget setting
     if tping and modeData.ViewTarget and targetHumanoid then
         if not viewingTarget then
             workspace.CurrentCamera.CameraSubject = targetHumanoid
@@ -1603,12 +1727,10 @@ local function tpLoop(dt)
     
     -- Handle jump reaction for specific animations
     if modeData.trackJump then
-        -- Check for jump
         local justJumped = false
         local currentY = targetRoot.Position.Y
         
         if lastTargetPositionY then
-            -- If Y position increased significantly, they're jumping
             if (currentY - lastTargetPositionY) > 0.1 then
                 justJumped = true
             end
@@ -1619,7 +1741,7 @@ local function tpLoop(dt)
         if justJumped and (tick() - lastJumpTime) > modeData.jumpCooldown then
             lastJumpTime = tick()
             isJumping = true
-            jumpTimer = 0.3  -- Duration of jump reaction
+            jumpTimer = 0.3
             positionOffset = Vector3.new(
                 positionOffset.X,
                 modeData.originalYOffset + modeData.jumpOffset,
@@ -1650,6 +1772,37 @@ local function tpLoop(dt)
         modeData.hrpRotation[2],
         modeData.hrpRotation[3]
     )
+    
+    -- Handle laying position state
+    if modeData.layingPos then
+        -- Standard laying position (on back)
+        rotationOffset = rotationOffset * CFrame.Angles(math.pi/2, 0, 0)
+        positionOffset = Vector3.new(
+            positionOffset.X,
+            positionOffset.Y - 1.5,
+            positionOffset.Z
+        )
+        
+        -- Inverted laying position (on front/upside down)
+        if modeData.invertedLayingPos then
+            rotationOffset = rotationOffset * CFrame.Angles(math.pi, 0, 0)
+            positionOffset = Vector3.new(
+                positionOffset.X,
+                positionOffset.Y + 0.8,  -- Slightly higher for inverted position
+                positionOffset.Z
+            )
+        end
+        
+        -- Set humanoid to physics state
+        if localHumanoid and localHumanoid:GetState() ~= Enum.HumanoidStateType.Physics then
+            localHumanoid:ChangeState(Enum.HumanoidStateType.Physics)
+        end
+    elseif localHumanoid then
+        -- Return to standing if we were previously laying down
+        if localHumanoid:GetState() == Enum.HumanoidStateType.Physics then
+            localHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end
     
     -- Calculate final CFrame
     local finalCFrame = targetRoot.CFrame * CFrame.new(positionOffset) * rotationOffset
