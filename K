@@ -1339,7 +1339,7 @@ local animationTemplates = {
         finalSpeed = 0,
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
-        originalYOffset = -4.6,  -- Store the original Y offset
+        originalYOffset = -4.4,  -- Store the original Y offset
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
@@ -1357,7 +1357,7 @@ local animationTemplates = {
         oscillateSpeed = 4.7,
         trackJump = true,  -- New property to identify jump-sensitive animations
         jumpOffset = -30,   -- How much to move down when target jumps
-        originalYOffset = -4.6,  -- Store the original Y offset
+        originalYOffset = -4.4,  -- Store the original Y offset
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
