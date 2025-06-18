@@ -721,7 +721,7 @@ local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm56
 local Window = Rayfield:CreateWindow({
    Name = "KillerFish(Ware)🐟",
    Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(0.9)", -- VZ
+   LoadingTitle = "HELLOO 🐟 v(1.0)", -- VZ
    LoadingSubtitle = "by KillerFish🐟",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -758,7 +758,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New 2 Option in the freakytype in Susy stuff | Bugfixes 41"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New 2 Option in the freakytype in Susy stuff | Bugfixes 62"})
 local Tab = Window:CreateTab("Client🐟", "user")
 
 local Toggle = Tab:CreateToggle({
@@ -1262,7 +1262,33 @@ local animationTemplates = {
         oscillateRange = {-1.6, -1},
         oscillateSpeed = 3.7
     },
-    ["7. Kiss"] = {
+    ["7. HandJ0b"] = {
+        animId = "rbxassetid://97884303",
+        looped = true,
+        layingPos = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, -1, 0},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://48975505",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 1
+    },
+    ["8. LayBang"] = {
+        animId = "rbxassetid://48975505",
+        looped = true,
+        layingPos = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 0.5, -2},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        oscillate = true,
+        oscillateRange = {-2.6, -2},
+        oscillateSpeed = 2.5
+    },
+    ["9. Kiss"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1270,7 +1296,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["8. Cuddle"] = {
+    ["10. Cuddle"] = {
         animId = "rbxassetid://180436334",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1278,7 +1304,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["9. AszOnFace"] = {
+    ["11. AszOnFace"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1286,7 +1312,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.1
     },
-    ["10. GrabHips"] = {
+    ["12. GrabHips"] = {
         animId = "rbxassetid://56153856",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1294,7 +1320,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["11. HeadSit"] = {
+    ["13. HeadSit"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1302,7 +1328,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["12. HandPP (Buggy)"] = {
+    ["14. HandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
@@ -1317,11 +1343,11 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["13. MovingHandPP (Buggy)"] = {
+    ["15. MovingHandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
-        offset = {0.5, -4.4, 0},
+        offset = {0.5, -4.4, -1},
         animSpeed = 1,
         lookAtTarget = false,
         initialSpeedDuration = 0.80,
@@ -1335,7 +1361,7 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["14. 69"] = {
+    ["16. 69"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, 0},
@@ -1343,7 +1369,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["15. Missionary"] = {
+    ["17. Missionary"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, math.pi, 0},
