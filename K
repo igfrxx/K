@@ -1210,7 +1210,25 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
-    ["3. Dog"] = {
+    ["3. Bang2"] = {
+        animId = "rbxassetid://188854557",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, 1},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+    },
+   ["4. InvertBang2"] = {
+        animId = "rbxassetid://188854557",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, -1},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+    },
+    ["5. Dog"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         layingPos = true,
@@ -1227,7 +1245,7 @@ local animationTemplates = {
         oscillateRange = {-2.4, -2},
         oscillateSpeed = 1.1
     },
-    ["4. Dog2"] = {
+    ["6. Dog2"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         layingPos = true,
@@ -1243,7 +1261,7 @@ local animationTemplates = {
         oscillateRange = {-2.4, -2},
         oscillateSpeed = 1.1
     },
-    ["5. Suck"] = {
+    ["7. Suck"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1251,7 +1269,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["6. GetSucked"] = {
+    ["8. GetSucked"] = {
         animId = "rbxassetid://79155149",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1262,7 +1280,7 @@ local animationTemplates = {
         oscillateRange = {-1.6, -1},
         oscillateSpeed = 3.7
     },
-    ["7. HandJ0b"] = {
+    ["9. HandJ0b"] = {
         animId = "rbxassetid://97884303",
         looped = true,
         layingPos = true,
@@ -1275,8 +1293,8 @@ local animationTemplates = {
         animSpeed = 1,
         secondaryAnimSpeed = 1
     },
-    ["8. LayBang"] = {
-        animId = "rbxassetid://48975505",
+    ["10. LayBang"] = {
+        animId = "rbxassetid://113246235",
         looped = true,
         layingPos = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1284,11 +1302,15 @@ local animationTemplates = {
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://48975505",
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
         oscillate = true,
         oscillateRange = {-2.6, -2},
         oscillateSpeed = 2.5
     },
-    ["9. Kiss"] = {
+    ["11. Kiss"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1296,7 +1318,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["10. Cuddle"] = {
+    ["12. Cuddle"] = {
         animId = "rbxassetid://180436334",
         looped = true,
         hrpRotation = {math.pi, 0, math.pi},
@@ -1304,7 +1326,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.5
     },
-    ["11. AszOnFace"] = {
+    ["13. AszOnFace"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1312,7 +1334,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 0.1
     },
-    ["12. GrabHips"] = {
+    ["14. GrabHips"] = {
         animId = "rbxassetid://56153856",
         looped = true,
         hrpRotation = {0, 0, 0},
@@ -1320,15 +1342,15 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["13. HeadSit"] = {
-        animId = "rbxassetid://48957148",
+    ["15. HeadSit"] = {
+        animId = "rbxassetid://260671046",
         looped = true,
         hrpRotation = {0, 0, 0},
         offset = {0, 2, 1},
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["14. HandPP (Buggy)"] = {
+    ["16. HandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
@@ -1343,7 +1365,7 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["15. MovingHandPP (Buggy)"] = {
+    ["17. MovingHandPP (Buggy)"] = {
         animId = "rbxassetid://85568863",
         looped = true,
         hrpRotation = {0, 0, 1.5707963267948966},
@@ -1361,7 +1383,7 @@ local animationTemplates = {
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
     },
-    ["16. 69"] = {
+    ["18. 69"] = {
         animId = "rbxassetid://95390146",
         looped = true,
         hrpRotation = {math.pi, 0, 0},
@@ -1369,7 +1391,7 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["17. Dog69"] = {
+    ["19. Dog69"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {math.pi, 0, 0},
@@ -1378,13 +1400,38 @@ local animationTemplates = {
         secondaryAnimId = "rbxassetid://95390146",
         animSpeed = 1
     },
-    ["18. Missionary"] = {
+    ["20. Missionary"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, math.pi, 0},
         offset = {0, 0, -1},
         secondaryAnim = false,
         animSpeed = 1
+    },
+    ["21. Grind"] = {
+        animId = "rbxassetid://216937924",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, -1},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://204328711",
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 1,
+        secondaryAnimSpeed = 0.5
+    },
+    ["22. HeadPet (idk)"] = {
+        animId = "rbxassetid://121574294",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {-3, -5.5, 0},
+        secondaryAnim = false,
+        animSpeed = 1,
+        trackJump = true,  -- New property to identify jump-sensitive animations
+        jumpOffset = -30,   -- How much to move down when target jumps
+        originalYOffset = -5.5,  -- Store the original Y offset
+        jumpCooldown = 0,  -- Cooldown between jump reactions
+        ViewTarget = true
     }
 }
 
@@ -2138,16 +2185,6 @@ local Dropdown = Tab:CreateDropdown({
 })
 
 local IntervalValue = "0.4"
-local Input = Tab:CreateInput({
-    Name = "Interval",
-    CurrentValue = IntervalValue,
-    PlaceholderText = "Enter interval in seconds",
-    RemoveTextAfterFocusLost = false,
-    Flag = "Input1",
-    Callback = function(Text)
-        IntervalValue = Text
-    end,
-})
 
 -- Cleanup when character dies
 humanoid.Died:Connect(function()
@@ -2178,6 +2215,7 @@ end)
 
 -- Initialize animations with proper speeds
 initializeAnimations()
+
 
 local Divider = Tab:CreateDivider()
 
