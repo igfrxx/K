@@ -1221,11 +1221,11 @@ local animationTemplates = {
         secondaryAnimId = "rbxassetid://48957148",
         interval = 0.5,
         lookAtTarget = false,
-        animSpeed = 1,
+        animSpeed = 0.5,
         secondaryAnimSpeed = 1,
         oscillate = true,
-        oscillateRange = {-2.6, -2},
-        oscillateSpeed = 2.5
+        oscillateRange = {-2.4, -2},
+        oscillateSpeed = 1.1
     },
     ["4. Dog2"] = {
         animId = "rbxassetid://48957148",
@@ -1237,11 +1237,11 @@ local animationTemplates = {
         secondaryAnimId = "rbxassetid://48957148",
         interval = 0.5,
         lookAtTarget = false,
-        animSpeed = 1,
+        animSpeed = 0.5,
         secondaryAnimSpeed = 1,
         oscillate = true,
-        oscillateRange = {-2.6, -2},
-        oscillateSpeed = 2.5
+        oscillateRange = {-2.4, -2},
+        oscillateSpeed = 1.1
     },
     ["5. Suck"] = {
         animId = "rbxassetid://95390146",
@@ -1369,7 +1369,16 @@ local animationTemplates = {
         secondaryAnim = false,
         animSpeed = 1
     },
-    ["17. Missionary"] = {
+    ["17. Dog69"] = {
+        animId = "rbxassetid://48957148",
+        looped = true,
+        hrpRotation = {math.pi, 0, 0},
+        offset = {0, 0, -1},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://95390146",
+        animSpeed = 1
+    },
+    ["18. Missionary"] = {
         animId = "rbxassetid://48957148",
         looped = true,
         hrpRotation = {0, math.pi, 0},
@@ -1898,7 +1907,24 @@ end
 
 local Section = Tab:CreateSection("ℹ️: Click StartFreaky To Start The Script")
 
--- UI Elements (assuming Rayfield library)
+local function forceStandUp()
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        -- Force stand up by changing state
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        
+        -- Re-enable important states that might have been disabled
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, true)
+        
+        -- Ensure physics is enabled
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+    end
+end
+
 Toggle = Tab:CreateToggle({
     Name = "StartFreaky [R6]",
     CurrentValue = false,
@@ -1913,120 +1939,122 @@ Toggle = Tab:CreateToggle({
             connection = RunService.Heartbeat:Connect(tpLoop)
         else
             cleanup()
+            forceStandUp()
         end
     end,
 })
 
 local Button = Tab:CreateButton({
-   Name = "Cvm💦",
-   Callback = function()
-       -- Store original speeds for all animation modes
-       local originalSpeeds = {}
-       for mode, data in pairs(animationTemplates) do
-           originalSpeeds[mode] = {
-               animSpeed = data.animSpeed,
-               secondaryAnimSpeed = data.secondaryAnimSpeed,
-               oscillateSpeed = data.oscillateSpeed
-           }
-       end
-       
-       -- Store current mode's original speeds
-       local currentOriginalAnimSpeed = animationTemplates[currentMode].animSpeed or 1
-       local currentOriginalSecondaryAnimSpeed = animationTemplates[currentMode].secondaryAnimSpeed or 1
-       local currentOriginalOscillateSpeed = animationTemplates[currentMode].oscillateSpeed or 0
-       
-       -- Timing control
-       local speedUpDuration = 5
-       local slowDownDuration = 6
-       local waitDuration = 3
-       local startTime = tick()
-       local maxSpeedMultiplier = 3
-       local phase = "speedingUp"
-       local zeroReachedTime = nil
-       
-       -- Connection handle
-       local speedUpdateConnection
-       
-       local function updateSpeeds()
-           local currentTime = tick()
-           local elapsed = currentTime - startTime
-           
-           if phase == "speedingUp" and elapsed >= speedUpDuration then
-               phase = "slowingDown"
-               startTime = currentTime
-           elseif phase == "slowingDown" and elapsed >= slowDownDuration then
-               phase = "waiting"
-               zeroReachedTime = currentTime
-               startTime = currentTime
-           elseif phase == "waiting" and (currentTime - zeroReachedTime) >= waitDuration then
-               phase = "done"
-           end
-           
-           local speedMultiplier = 1
-           if phase == "speedingUp" then
-               local progress = math.min(elapsed / speedUpDuration, 1)
-               speedMultiplier = 1 + ((maxSpeedMultiplier - 1) * progress)
-           elseif phase == "slowingDown" then
-               local progress = math.min(elapsed / slowDownDuration, 1)
-               speedMultiplier = maxSpeedMultiplier - ((maxSpeedMultiplier - 1) * progress)
-           elseif phase == "waiting" then
-               speedMultiplier = 0
-           elseif phase == "done" then
-               cleanup()
-               
-               for mode, speeds in pairs(originalSpeeds) do
-                   if animationTemplates[mode] then
-                       animationTemplates[mode].animSpeed = speeds.animSpeed
-                       animationTemplates[mode].secondaryAnimSpeed = speeds.secondaryAnimSpeed
-                       if animationTemplates[mode].oscillateSpeed then
-                           animationTemplates[mode].oscillateSpeed = speeds.oscillateSpeed
-                       end
-                   end
-               end
-               
-               if animationTracks[currentMode] and animationTracks[currentMode].IsPlaying then
-                   animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
-               end
-               
-               if secondaryAnimationTracks[currentMode] and secondaryAnimationTracks[currentMode].IsPlaying then
-                   secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
-               end
-               
-               -- Reset camera view when done
-               if viewingTarget then
-                   workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
-                   viewingTarget = false
-               end
-               
-               if speedUpdateConnection then
-                   speedUpdateConnection:Disconnect()
-               end
-               return
-           end
-           
-           if animationTemplates[currentMode].animSpeed then
-               animationTemplates[currentMode].animSpeed = currentOriginalAnimSpeed * speedMultiplier
-           end
-           
-           if animationTemplates[currentMode].secondaryAnimSpeed then
-               animationTemplates[currentMode].secondaryAnimSpeed = currentOriginalSecondaryAnimSpeed * speedMultiplier
-           end
-           
-           if animationTemplates[currentMode].oscillateSpeed then
-               animationTemplates[currentMode].oscillateSpeed = currentOriginalOscillateSpeed * speedMultiplier
-           end
-           
-           if animationTracks[currentMode] then
-               animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)
-           end
-           
-           if secondaryAnimationTracks[currentMode] then
-               secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)
-           end
-       end
-       
-       speedUpdateConnection = RunService.Heartbeat:Connect(updateSpeeds)
-   end
+    Name = "Cvm 💦",
+    Callback = function()
+        -- Store original speeds for all animation modes
+        local originalSpeeds = {}
+        for mode, data in pairs(animationTemplates) do
+            originalSpeeds[mode] = {
+                animSpeed = data.animSpeed,
+                secondaryAnimSpeed = data.secondaryAnimSpeed,
+                oscillateSpeed = data.oscillateSpeed
+            }
+        end
+
+        -- Store current mode's original speeds  
+        local currentOriginalAnimSpeed = animationTemplates[currentMode].animSpeed or 1  
+        local currentOriginalSecondaryAnimSpeed = animationTemplates[currentMode].secondaryAnimSpeed or 1  
+        local currentOriginalOscillateSpeed = animationTemplates[currentMode].oscillateSpeed or 0  
+          
+        -- Timing control  
+        local speedUpDuration = 5  
+        local slowDownDuration = 6  
+        local waitDuration = 3  
+        local startTime = tick()  
+        local maxSpeedMultiplier = 3  
+        local phase = "speedingUp"  
+        local zeroReachedTime = nil  
+          
+        -- Connection handle  
+        local speedUpdateConnection  
+          
+        local function updateSpeeds()  
+            local currentTime = tick()  
+            local elapsed = currentTime - startTime  
+              
+            if phase == "speedingUp" and elapsed >= speedUpDuration then  
+                phase = "slowingDown"  
+                startTime = currentTime  
+            elseif phase == "slowingDown" and elapsed >= slowDownDuration then  
+                phase = "waiting"  
+                zeroReachedTime = currentTime  
+                startTime = currentTime  
+            elseif phase == "waiting" and (currentTime - zeroReachedTime) >= waitDuration then  
+                phase = "done"  
+            end  
+              
+            local speedMultiplier = 1  
+            if phase == "speedingUp" then  
+                local progress = math.min(elapsed / speedUpDuration, 1)  
+                speedMultiplier = 1 + ((maxSpeedMultiplier - 1) * progress)  
+            elseif phase == "slowingDown" then  
+                local progress = math.min(elapsed / slowDownDuration, 1)  
+                speedMultiplier = maxSpeedMultiplier - ((maxSpeedMultiplier - 1) * progress)  
+            elseif phase == "waiting" then  
+                speedMultiplier = 0  
+            elseif phase == "done" then  
+                cleanup()  
+                forceStandUp()
+                  
+                for mode, speeds in pairs(originalSpeeds) do  
+                    if animationTemplates[mode] then  
+                        animationTemplates[mode].animSpeed = speeds.animSpeed  
+                        animationTemplates[mode].secondaryAnimSpeed = speeds.secondaryAnimSpeed  
+                        if animationTemplates[mode].oscillateSpeed then  
+                            animationTemplates[mode].oscillateSpeed = speeds.oscillateSpeed  
+                        end  
+                    end  
+                end  
+                  
+                if animationTracks[currentMode] and animationTracks[currentMode].IsPlaying then  
+                    animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)  
+                end  
+                  
+                if secondaryAnimationTracks[currentMode] and secondaryAnimationTracks[currentMode].IsPlaying then  
+                    secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)  
+                end  
+                  
+                -- Reset camera view when done  
+                if viewingTarget then  
+                    workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player  
+                    viewingTarget = false  
+                end  
+                  
+                if speedUpdateConnection then  
+                    speedUpdateConnection:Disconnect()  
+                end  
+                return  
+            end  
+              
+            if animationTemplates[currentMode].animSpeed then  
+                animationTemplates[currentMode].animSpeed = currentOriginalAnimSpeed * speedMultiplier  
+            end  
+              
+            if animationTemplates[currentMode].secondaryAnimSpeed then  
+                animationTemplates[currentMode].secondaryAnimSpeed = currentOriginalSecondaryAnimSpeed * speedMultiplier  
+            end  
+              
+            if animationTemplates[currentMode].oscillateSpeed then  
+                animationTemplates[currentMode].oscillateSpeed = currentOriginalOscillateSpeed * speedMultiplier  
+            end  
+              
+            if animationTracks[currentMode] then  
+                animationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].animSpeed or 1)  
+            end  
+              
+            if secondaryAnimationTracks[currentMode] then  
+                secondaryAnimationTracks[currentMode]:AdjustSpeed(animationTemplates[currentMode].secondaryAnimSpeed or 1)  
+            end  
+        end  
+          
+        speedUpdateConnection = RunService.Heartbeat:Connect(updateSpeeds)
+    end
 })
 
 local ClickTargetToggle = Tab:CreateToggle({
