@@ -13,6 +13,10 @@ function PlaySound(id, volume)
     return sound
 end
 
+PlaySound(12221831, 0)
+PlaySound(12221976, 0)
+PlaySound(12221967, 0)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -256,6 +260,7 @@ local function playIntro()
     spawn(function()
         shakeObject(container, SHAKE_INTENSITY, 0.5)
     end)
+    PlaySound(12221831, 1)
     
     wait(0.5) -- Shake duration
     
@@ -285,7 +290,6 @@ local function playIntro()
     wait(0.3) -- Wait for fade out to complete
     
     -- Clean up
-    PlaySound(12221831, 1)
     gui:Destroy()
     blur:Destroy()
 end
@@ -807,11 +811,13 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "weirdest trolling Gui ig"})
 local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Renamed The Gui To NumeroWare cuz I thought it was cool| Bugfixes 62"})
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Client", "user")
 
 local Toggle = Tab:CreateToggle({
@@ -949,6 +955,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Cool stuff I made :) ", "trash")
 
 local Button = Tab:CreateButton({
@@ -972,7 +979,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Protection", "shield")
 
 function Void()
@@ -1174,6 +1181,7 @@ local Toggle = Tab:CreateToggle({
    end,
 })
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("SussyTab", "file")
 local Label = Tab:CreateLabel("Most Of These Are Made For R6", "info")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
@@ -1268,18 +1276,24 @@ local animationTemplates = {
         looped = true,
         hrpRotation = {0, 0, 0},
         offset = {0, 0, 1},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://56153856",
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
+        secondaryAnimSpeed = 1
     },
    ["4. InvertBang2"] = {
         animId = "rbxassetid://188854557",
         looped = true,
         hrpRotation = {0, 0, 0},
+        secondaryAnim = true,
+        secondaryAnimId = "rbxassetid://56153856",
         offset = {0, 0, -1},
         interval = 0.5,
         lookAtTarget = false,
         animSpeed = 1,
+        secondaryAnimSpeed = 1
     },
     ["5. Dog"] = {
         animId = "rbxassetid://48957148",
@@ -2398,6 +2412,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Animations", "activity")
 local Label = Tab:CreateLabel("All These Anims Are For R6", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
@@ -2548,6 +2563,7 @@ CreateAnimationToggle("rbxassetid://204328711", "DinoWalk")
 CreateAnimationToggle("rbxassetid://103798833", "ArmBreak2")
 CreateAnimationToggle("rbxassetid://55791140", "Strum")
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Scripts that I got from walmart", "box")
 
 local Button = Tab:CreateButton({
@@ -2593,6 +2609,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
+PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Admins", "user-check")
 
 local Button = Tab:CreateButton({
@@ -2620,7 +2637,7 @@ PlaySound(12221967, 1)
 Rayfield:Notify({
    Title = "Numero Loaded",
    Content = "made by @hmmm5650",
-   Duration = 6.5,
+   Duration = 3,
    Image = "rewind",
 })
 
