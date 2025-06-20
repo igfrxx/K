@@ -120,124 +120,181 @@ end
 afon.on(game.Players.LocalPlayer, true)
 afon.on(game.Players.LocalPlayer)
 
--- Roblox Killer Fish Intro Script
+
+-- NumeroIntro Script (Transparent Container, Squircle Image)
+-- Creates a UI intro with image ID 99799525132491 that has squircle corners
+
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
--- Create ScreenGui (set to ignore GUI inset and cover everything)
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "KillerFishIntro"
-screenGui.DisplayOrder = 9999 -- Make sure it's on top of other UIs
-screenGui.IgnoreGuiInset = true
-screenGui.ResetOnSpawn = false
-screenGui.Parent = PlayerGui
+-- Configuration
+local IMAGE_ID = "rbxassetid://99799525132491"
+local INTRO_DURATION = 3 -- seconds
+local BLUR_INTENSITY = 10
+local SHAKE_INTENSITY = 10
+local CORNER_RADIUS = UDim.new(0.1, 0) -- Squircle corner radius
 
--- Create background blur effect
-local blur = Instance.new("BlurEffect")
-blur.Name = "IntroBlur"
-blur.Size = 0
-blur.Parent = game:GetService("Lighting")
-
--- Create black background frame
-local background = Instance.new("Frame")
-background.Name = "Background"
-background.BackgroundColor3 = Color3.new(0, 0, 0)
-background.Size = UDim2.new(1, 0, 1, 0)
-background.Parent = screenGui
-
--- Create image label for the killer fish
-local fishImage = Instance.new("ImageLabel")
-fishImage.Name = "KillerFish"
-fishImage.Image = "rbxassetid://126485931781624"
-fishImage.BackgroundTransparency = 1
-fishImage.AnchorPoint = Vector2.new(0.5, 0.5)
-fishImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-fishImage.Size = UDim2.new(0, 500, 0, 500) -- Adjust size as needed
-fishImage.ImageTransparency = 1 -- Start fully transparent
-fishImage.Parent = screenGui
-
--- Load the sound
-local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://9083760331"
-sound.Parent = screenGui
-sound.Volume = 0.5 -- Adjust volume as needed
-
--- Animation function
-local function playIntro()
-    -- Tween the blur effect
-    local blurTween = game:GetService("TweenService"):Create(
-        blur,
-        TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = 24}
-    )
-    blurTween:Play()
+-- Create the main screen GUI
+local function createIntroGui()
+    local player = Players.LocalPlayer
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "NumeroIntro"
+    gui.DisplayOrder = 1000 -- High enough to cover other UIs
+    gui.IgnoreGuiInset = true -- Cover the whole screen
+    gui.ResetOnSpawn = false
     
-    -- Fade in the fish image
-    local fadeInTween = game:GetService("TweenService"):Create(
-        fishImage,
-        TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {ImageTransparency = 0}
-    )
-    fadeInTween:Play()
+    -- Background (black with slight transparency)
+    local background = Instance.new("Frame")
+    background.Name = "Background"
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.Position = UDim2.new(0, 0, 0, 0)
+    background.BackgroundColor3 = Color3.new(0, 0, 0)
+    background.BackgroundTransparency = 0.1
+    background.ZIndex = 1
+    background.Parent = gui
     
-    -- Play the sound
-    sound:Play()
+    -- Blur effect (applied to the whole screen)
+    local blur = Instance.new("BlurEffect")
+    blur.Name = "IntroBlur"
+    blur.Size = 0
+    blur.Parent = game:GetService("Lighting")
     
-    -- Wait for the fade in to complete
-    fadeInTween.Completed:Wait()
+    -- Main image container (fully transparent)
+    local container = Instance.new("Frame")
+    container.Name = "ImageContainer"
+    container.AnchorPoint = Vector2.new(0.5, 0.5)
+    container.Size = UDim2.new(0.4, 0, 0.4, 0)
+    container.Position = UDim2.new(0.5, 0, -0.5, 0) -- Start above screen
+    container.BackgroundTransparency = 1 -- Fully transparent container
+    container.ZIndex = 2
+    container.Parent = gui
     
-    -- Hold the image for a moment
-    wait(2)
+    -- The actual image with squircle corners
+    local image = Instance.new("ImageLabel")
+    image.Name = "NumeroImage"
+    image.Size = UDim2.new(1, 0, 1, 0)
+    image.Position = UDim2.new(0, 0, 0, 0)
+    image.BackgroundTransparency = 1
+    image.Image = IMAGE_ID
+    image.ScaleType = Enum.ScaleType.Fit
+    image.ZIndex = 3
+    image.Parent = container
     
-    -- Slide the image upwards and fade out
-    local slideUpTween = game:GetService("TweenService"):Create(
-        fishImage,
-        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        {
-            Position = UDim2.new(0.5, 0, -0.5, 0),
-            ImageTransparency = 1
-        }
-    )
-    slideUpTween:Play()
+    -- UICorner for squircle effect (applied to the image)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = CORNER_RADIUS
+    corner.Parent = image
     
-    -- Fade out the blur and background
-    local blurOutTween = game:GetService("TweenService"):Create(
-        blur,
-        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = 0}
-    )
-    blurOutTween:Play()
-    
-    local bgFadeTween = game:GetService("TweenService"):Create(
-        background,
-        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {BackgroundTransparency = 1}
-    )
-    bgFadeTween:Play()
-    
-    -- Wait for animations to complete
-    slideUpTween.Completed:Wait()
-    
-    -- Clean up
-    screenGui:Destroy()
-    blur:Destroy()
-    
-    -- Load other scripts here
-    -- Example: require(script.Parent.OtherScript)
+    return gui, blur
 end
 
--- Start the intro
+-- Shake function
+local function shakeObject(object, intensity, duration)
+    local startTime = os.clock()
+    local originalPosition = object.Position
+    
+    while os.clock() - startTime < duration do
+        local elapsed = os.clock() - startTime
+        local progress = elapsed / duration
+        local shakeFactor = (1 - progress) * intensity -- Shake reduces over time
+        
+        local offsetX = (math.random() * 2 - 1) * shakeFactor
+        local offsetY = (math.random() * 2 - 1) * shakeFactor
+        
+        object.Position = originalPosition + UDim2.new(0, offsetX, 0, offsetY)
+        RunService.RenderStepped:Wait()
+    end
+    
+    object.Position = originalPosition
+end
+
+-- Main animation function
+local function playIntro()
+    local gui, blur = createIntroGui()
+    gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    local container = gui:WaitForChild("ImageContainer")
+    local image = container:WaitForChild("NumeroImage")
+    local background = gui:WaitForChild("Background")
+    
+    -- Initial setup
+    image.ImageTransparency = 1 -- Start fully transparent
+    
+    -- Fade in background
+    TweenService:Create(background, TweenInfo.new(0.5), {BackgroundTransparency = 0.1}):Play()
+    
+    -- Slide down animation
+    local slideDown = TweenService:Create(
+        container,
+        TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0.5, 0, 0.5, 0)}
+    )
+    
+    -- Fade in image
+    local fadeIn = TweenService:Create(
+        image,
+        TweenInfo.new(0.8),
+        {ImageTransparency = 0}
+    )
+    
+    -- Blur animation
+    local blurIn = TweenService:Create(
+        blur,
+        TweenInfo.new(0.8),
+        {Size = BLUR_INTENSITY}
+    )
+    
+    -- Play initial animations
+    slideDown:Play()
+    fadeIn:Play()
+    blurIn:Play()
+    
+    wait(1.5) -- Hold for a moment
+    
+    -- Shake effect
+    spawn(function()
+        shakeObject(container, SHAKE_INTENSITY, 0.5)
+    end)
+    
+    wait(0.5) -- Shake duration
+    
+    -- Fade out everything
+    local fadeOut = TweenService:Create(
+        image,
+        TweenInfo.new(0.3),
+        {ImageTransparency = 1}
+    )
+    
+    local bgFadeOut = TweenService:Create(
+        background,
+        TweenInfo.new(0.3),
+        {BackgroundTransparency = 1}
+    )
+    
+    local blurOut = TweenService:Create(
+        blur,
+        TweenInfo.new(0.3),
+        {Size = 0}
+    )
+    
+    fadeOut:Play()
+    bgFadeOut:Play()
+    blurOut:Play()
+    
+    wait(0.3) -- Wait for fade out to complete
+    
+    -- Clean up
+    PlaySound(12221831, 1)
+    gui:Destroy()
+    blur:Destroy()
+end
+
+-- Play the intro when the player joins
+Players.LocalPlayer:WaitForChild("PlayerGui")
 playIntro()
 
 -- StoredFuncs/Variables
-
-
--- Antifling Variable
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-
-local antiflingConnection
 
 -- VoidProtection Variable
 local player = game.Players.LocalPlayer
@@ -715,14 +772,12 @@ function PlaySound(id, volume)
     return sound
 end
 
-PlaySound(7092564605, 0.5)
-
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm5650/Rayfield/refs/heads/main/RayField'))()
 local Window = Rayfield:CreateWindow({
-   Name = "KillerFish(Ware)🐟",
-   Icon = 126485931781624, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "HELLOO 🐟 v(1.0)", -- VZ
-   LoadingSubtitle = "by KillerFish🐟",
+   Name = "NumeroWare",
+   Icon = 96967586635796, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "Numero Loaded  v(1.0)", -- VZ
+   LoadingSubtitle = "by hmmm5650",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    DisableRayfieldPrompts = false,
@@ -752,14 +807,12 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-PlaySound(7092563823, 0.5)
-
 local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
-local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "I don't know what I am but I taste really good🐟"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added New 2 Option in the freakytype in Susy stuff | Bugfixes 62"})
-local Tab = Window:CreateTab("Client🐟", "user")
+local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "weirdest trolling Gui ig"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Renamed The Gui To NumeroWare cuz I thought it was cool| Bugfixes 62"})
+local Tab = Window:CreateTab("Client", "user")
 
 local Toggle = Tab:CreateToggle({
     Name = "Change Walkspeed",
@@ -896,7 +949,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Cool stuff I made :) 🐟", "trash")
+local Tab = Window:CreateTab("Cool stuff I made :) ", "trash")
 
 local Button = Tab:CreateButton({
    Name = "TerminalCmd",
@@ -920,7 +973,7 @@ local Button = Tab:CreateButton({
 })
 
 
-local Tab = Window:CreateTab("Protection🐟", "file")
+local Tab = Window:CreateTab("Protection", "shield")
 
 function Void()
 local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -1121,8 +1174,8 @@ local Toggle = Tab:CreateToggle({
    end,
 })
 
-local Tab = Window:CreateTab("Susy Stuff ><((( >", "file")
-local Label = Tab:CreateLabel("KillerFish Gets Fishy🐟", "info")
+local Tab = Window:CreateTab("SussyTab", "file")
+local Label = Tab:CreateLabel("Most Of These Are Made For R6", "info")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
 local Divider = Tab:CreateDivider()
 
@@ -2345,7 +2398,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Animations🐟", "activity")
+local Tab = Window:CreateTab("Animations", "activity")
 local Label = Tab:CreateLabel("All These Anims Are For R6", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "⚠️WARN⚠️", Content = "All of these animations won't work if you respawn that means you have to reload the gui⚠️"})
 local Divider = Tab:CreateDivider()
@@ -2495,7 +2548,7 @@ CreateAnimationToggle("rbxassetid://204328711", "DinoWalk")
 CreateAnimationToggle("rbxassetid://103798833", "ArmBreak2")
 CreateAnimationToggle("rbxassetid://55791140", "Strum")
 
-local Tab = Window:CreateTab("Scripts that I got from walmart🐟", "box")
+local Tab = Window:CreateTab("Scripts that I got from walmart", "box")
 
 local Button = Tab:CreateButton({
    Name = "Mobile ShifLock",
@@ -2540,7 +2593,7 @@ local Button = Tab:CreateButton({
    end,
 })
 
-local Tab = Window:CreateTab("Admins🐟", "user-check")
+local Tab = Window:CreateTab("Admins", "user-check")
 
 local Button = Tab:CreateButton({
    Name = "Infinite Yield",
@@ -2563,8 +2616,9 @@ local Button = Tab:CreateButton({
    end,
 })
 
+PlaySound(12221967, 1)
 Rayfield:Notify({
-   Title = "im a killerfish🐟",
+   Title = "Numero Loaded",
    Content = "made by @hmmm5650",
    Duration = 6.5,
    Image = "rewind",
