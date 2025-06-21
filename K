@@ -2131,7 +2131,7 @@ local function forceStandUp()
 end
 
 Toggle = Tab:CreateToggle({
-    Name = "StartFreaky [R6]",
+    Name = "StartFreaky",
     CurrentValue = false,
     Flag = "Toggle1",
     Callback = function(Value)
@@ -2294,7 +2294,7 @@ end)
 
 -- Create the dropdown
 local ModeDropdown = Tab:CreateDropdown({
-    Name = "FreakyType [R6]",
+    Name = "FreakyType",
     Options = animationOptions,
     CurrentOption = {"1. Bang"},
     MultipleOptions = false,
