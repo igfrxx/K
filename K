@@ -16,6 +16,7 @@ end
 PlaySound(12221831, 0)
 PlaySound(12221976, 0)
 PlaySound(12221967, 0)
+PlaySound(4822429705, 0)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -776,11 +777,13 @@ function PlaySound(id, volume)
     return sound
 end
 
+
+PlaySound(4822429705, 1)
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/hm5650/Rayfield/refs/heads/main/RayField'))()
 local Window = Rayfield:CreateWindow({
    Name = "NumeroWare",
    Icon = 96967586635796, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Numero Loaded  v(1.0)", -- VZ
+   LoadingTitle = "Numero Loaded  v(1.1)", -- VZ
    LoadingSubtitle = "by hmmm5650",
    Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -816,7 +819,7 @@ local Tab = Window:CreateTab("info", "info")
 local Label = Tab:CreateLabel("YT: @hmmm5650", "play")
 local Label = Tab:CreateLabel("DISCLAIMER: THIS GUI IS ONLY MADE FOR TROLLING", "zap")
 local Paragraph = Tab:CreateParagraph({Title = "[About]", Content = "weirdest trolling Gui ig"})
-local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Renamed The Gui To NumeroWare cuz I thought it was cool| Bugfixes 62"})
+local Paragraph = Tab:CreateParagraph({Title = "[UpdateLog]", Content = "Added R15 Animations In FreakyType Dropdown On SusyStuff Tab | Bugfixes 62"})
 PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Client", "user")
 
@@ -956,7 +959,7 @@ local Button = Tab:CreateButton({
 })
 
 PlaySound(12221976, 1)
-local Tab = Window:CreateTab("Cool stuff I made :) ", "trash")
+local Tab = Window:CreateTab("Coolstuff", "trash")
 
 local Button = Tab:CreateButton({
    Name = "TerminalCmd",
@@ -1499,6 +1502,94 @@ local animationTemplates = {
         originalYOffset = -5.5,  -- Store the original Y offset
         jumpCooldown = 0,  -- Cooldown between jump reactions
         ViewTarget = true
+    },
+    ["23. Bang [R15]"] = {
+        animId = "rbxassetid://10714068222",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, 1},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 2
+    },
+    ["24. InvertBang [R15]"] = {
+        animId = "rbxassetid://10714068222",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, 0, -1},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 2
+    },
+    ["25. Suck [R15]"] = {
+        animId = "rbxassetid://12507085924",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
+        offset = {0, -0.80, -1},
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
+        oscillate = true,
+        oscillateRange = {-1.4, -1},
+        oscillateSpeed = 3.5,
+        secondaryAnim = false,
+        animSpeed = 3
+    },
+    ["26. GetSucked [R15]"] = {
+        animId = "rbxassetid://10714068222",
+        looped = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 2.4, -1},
+        secondaryAnim = false,
+        animSpeed = 2,
+        oscillate = true,
+        oscillateRange = {-1.6, -1},
+        oscillateSpeed = 3.7
+    },
+    ["27. Dog [R15]"] = {
+        animId = "rbxassetid://12507083048",
+        looped = true,
+        hrpRotation = {0, 0, 0},
+        offset = {0, -0.3, -2},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 2,
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
+        oscillate = true,
+        oscillateRange = {-2.4, -2},
+        oscillateSpeed = 1.1
+    },
+    ["28. Dog2 [R15]"] = {
+        animId = "rbxassetid://12507083048",
+        looped = true,
+        hrpRotation = {math.pi, math.pi, 0},
+        offset = {0, -2.2, -2},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 2,
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
+        oscillate = true,
+        oscillateRange = {-2.4, -2},
+        oscillateSpeed = 1.1,
+        ViewTarget = true
+    },
+    ["29. Missionary [R15]"] = {
+        animId = "rbxassetid://12507083048",
+        looped = true,
+        layingPos = true,
+        hrpRotation = {math.pi, 0, math.pi},
+        offset = {0, 0.7, -2},
+        interval = 0.5,
+        lookAtTarget = false,
+        animSpeed = 2,
+        initialSpeedDuration = 1,
+        finalSpeed = 0,
+        oscillate = true,
+        oscillateRange = {-2.4, -2},
+        oscillateSpeed = 1.4
     }
 }
 
