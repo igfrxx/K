@@ -2658,11 +2658,19 @@ PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Scripts that I got from walmart", "box")
 
 local Button = Tab:CreateButton({
-   Name = "Mobile ShifLock",
+   Name = "Mobile ShiftLock",
    Callback = function()
    loadstring(game:HttpGet("https://github.com/ltseverydayyou/uuuuuuu/blob/main/shiftlock?raw=true"))()
    end,
 })
+
+local Button = Tab:CreateButton({
+   Name = "Fe Animation gui [R6]",
+   Callback = function()
+   loadstring(game:HttpGet("https://gist.githubusercontent.com/JungleScripts/3bf05e342bb16908f37a4a8b6860c12d/raw/b02c30463f5136c3e6cdd22c78cf1c8bb5485e48/gistfile1.txt"))()
+   end,
+})
+
 
 local Button = Tab:CreateButton({
    Name = "Toolcontrol (Hold Any Tool Before Use And Wait)",
