@@ -2657,6 +2657,12 @@ CreateAnimationToggle("rbxassetid://55791140", "Strum")
 PlaySound(12221976, 1)
 local Tab = Window:CreateTab("Scripts that I got from walmart", "box")
 
+function apqq()
+pcall(function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Epik-R6-Dancezz-42246", true))()
+end)
+end
+
 local Button = Tab:CreateButton({
    Name = "Mobile ShiftLock",
    Callback = function()
@@ -2665,12 +2671,11 @@ local Button = Tab:CreateButton({
 })
 
 local Button = Tab:CreateButton({
-   Name = "Fe Animation gui [R6]",
+   Name = "Fe Animation [R6]",
    Callback = function()
-   loadstring(game:HttpGet("https://gist.githubusercontent.com/JungleScripts/3bf05e342bb16908f37a4a8b6860c12d/raw/b02c30463f5136c3e6cdd22c78cf1c8bb5485e48/gistfile1.txt"))()
+   apqq()
    end,
 })
-
 
 local Button = Tab:CreateButton({
    Name = "Toolcontrol (Hold Any Tool Before Use And Wait)",
