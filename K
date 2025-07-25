@@ -2659,7 +2659,7 @@ local Tab = Window:CreateTab("Scripts that I got from walmart", "box")
 
 function apqq()
 pcall(function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Epik-R6-Dancezz-42246", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Fsploit/FeAnimationHub/refs/heads/main/Hub.lua"))()
 end)
 end
 
