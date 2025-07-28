@@ -1000,7 +1000,7 @@ workspace.FallenPartsDestroyHeight = -500
 end
 
 local TeleportTime = 0.1
-local AutoStopTime = 2 -- seconds to run before auto-stopping
+local AutoStopTime = 5 -- seconds to run before auto-stopping
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
