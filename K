@@ -999,6 +999,125 @@ hrp.CFrame = lastCFrame
 workspace.FallenPartsDestroyHeight = -500
 end
 
+local TeleportTime = 0.1
+local AutoStopTime = 2 -- seconds to run before auto-stopping
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local localPlayer = Players.LocalPlayer
+
+local function resetCameraSubject()
+    if workspace.CurrentCamera and localPlayer.Character then
+        local humanoid = localPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        if humanoid then
+            workspace.CurrentCamera.CameraSubject = humanoid
+        end
+    end
+end
+
+local function StartAB()
+    local plr = Players.LocalPlayer
+    local character = plr.Character or plr.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    
+    local lastPos = hrp.Position
+    local targetPos = Vector3.new(0, -80000000, 0)
+    local db = false
+    local velConn
+    
+    -- Clean up any existing Gaze parts
+    for _, gaze in ipairs(workspace:GetDescendants()) do
+        if gaze:IsA("Part") and gaze.Name == "Gaze" and gaze.Transparency == 0.5 then
+            workspace.Gaze:Destroy()
+        end
+    end
+
+    local function createTween(targetCFrame)
+        local tweenInfo = TweenInfo.new(TeleportTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        return TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+    end
+
+    local function startVelLoop()
+        velConn = RunService.Heartbeat:Connect(function()
+            hrp.Velocity = Vector3.new(0, 0, 0)
+        end)
+    end
+
+    local function stopScript()
+        if db then return end
+        db = true
+        
+        -- Stop velocity loop
+        if velConn then
+            velConn:Disconnect()
+            velConn = nil
+        end
+        
+        -- Tween back to original position
+        local tweenBack = createTween(CFrame.new(lastPos))
+        tweenBack:Play()
+        tweenBack.Completed:Wait()
+        
+        -- Reset camera and clean up
+        workspace.FallenPartsDestroyHeight = -500
+        resetCameraSubject()
+        
+        for _, gaze in ipairs(workspace:GetDescendants()) do
+            if gaze:IsA("Part") and gaze.Name == "Gaze" and gaze.Transparency == 0.5 then
+                workspace.Gaze:Destroy()
+            end
+        end
+        
+        db = false
+    end
+
+    if db then return end
+    db = true
+    
+    -- Store original position
+    lastPos = hrp.Position
+    
+    -- First teleport 20 studs underground
+    local undergroundPos = Vector3.new(lastPos.X, lastPos.Y - 20, lastPos.Z)
+    local undergroundTween = createTween(CFrame.new(undergroundPos))
+    undergroundTween:Play()
+    undergroundTween.Completed:Wait()
+    
+    -- Create Gaze part and set camera
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(4, 5, 4)
+    part.Position = lastPos
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 0.5
+    part.Name = "Gaze"
+    part.Parent = game.Workspace
+    workspace.CurrentCamera.CameraSubject = part
+    
+    workspace.FallenPartsDestroyHeight = 0/0
+    
+    -- Tween to target position
+    local tweenToTarget = createTween(CFrame.new(targetPos))
+    tweenToTarget:Play()
+    tweenToTarget.Completed:Wait()
+    
+    -- Start velocity loop
+    startVelLoop()
+    
+    -- Schedule automatic stop after AutoStopTime seconds
+    delay(AutoStopTime, stopScript)
+    
+    db = false
+end
+
+local Button = Tab:CreateButton({
+   Name = "[STRONG] AntiBang (Manual)",
+   Callback = function()
+   StartAB()
+   end,
+})
 
 local Button = Tab:CreateButton({
    Name = "AntiBang (Manual)",
