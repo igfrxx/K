@@ -999,7 +999,7 @@ hrp.CFrame = lastCFrame
 workspace.FallenPartsDestroyHeight = -500
 end
 
-local TeleportTime = 0.1
+local TeleportTime = 0.2
 local AutoStopTime = 5 -- seconds to run before auto-stopping
 
 local Players = game:GetService("Players")
